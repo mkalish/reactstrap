@@ -11,8 +11,8 @@ class CarouselItem extends React.Component {
   }
 
 
-  componentDidReceiveProps() {
-    console.log('NEXT PROPS', this.props.direction, this.props.altText);
+  componentWillReceiveProps(nextProps) {
+    console.log('NEXT PROPS', nextProps.direction, nextProps.altText);
   }
 
   componentWillAppear(callBack) {
