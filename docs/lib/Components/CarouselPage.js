@@ -11,7 +11,7 @@ export default class CarouselPage extends React.Component {
       <div>
         <Helmet title="Carousel" />
 
-        <h3>Collapse</h3>
+        <h3>Carousel</h3>
         <div className="docs-example">
           <CarouselExample />
         </div>
@@ -24,17 +24,19 @@ export default class CarouselPage extends React.Component {
         <h3>Properties</h3>
         <pre>
           <PrismCode className="language-jsx">
-{`Collapse.propTypes = {
-  isOpen: PropTypes.bool,
-  className: PropTypes.node,
-  navbar: PropTypes.bool,
-  delay: PropTypes.oneOfType([
-    PropTypes.shape({ show: PropTypes.number, hide: PropTypes.number }),
-    PropTypes.number
-  ]), // optionally override show/hide delays - default { show: 350, hide: 350 }
-  onOpened: PropTypes.func,
-  onClosed: PropTypes.func,
-}`}
+{`Carousel.propTypes = {
+  items: PropTypes.array.isRequired,
+  cssModule: PropTypes.object,
+  activeIndex: PropTypes.number,
+  cycle: PropTypes.bool,
+  wrap: PropTypes.bool,
+  interval: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.bool
+  ]),
+  keyboard: PropTypes.bool,
+  hover: PropTypes.string
+};`}
           </PrismCode>
         </pre>
       </div>
