@@ -177,7 +177,6 @@ Carousel.propTypes = {
     PropTypes.number,
     PropTypes.bool
   ]),
-  keyboard: PropTypes.bool,
   hover: PropTypes.string
 };
 
