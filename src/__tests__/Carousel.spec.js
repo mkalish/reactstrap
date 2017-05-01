@@ -1,6 +1,9 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import { Carousel } from '../';
+import CarouselItem from '../CarouselItem';
+import CarouselIndicators from '../CarouselIndicators';
+import CarouselControl from '../CarouselControl';
 
 describe('Carousel', () => {
   beforeEach(() => {
@@ -16,6 +19,33 @@ describe('Carousel', () => {
       { src: '', altText: 'b', caption: 'caption 2' },
       { src: '', altText: 'c', caption: 'caption 3' }
   ];
+
+  describe('items', () => {
+    it('should render an img tag', () => {
+      const wrapper = mount(<CarouselItem src={items[0].src} altText={items[0].src} />);
+      expect(wrapper.find('img').length).toEqual(1);
+    });
+  });
+
+  describe('indicators', () => {
+    it('should render a list with the right number of items', () => {
+      const wrapper = mount(<CarouselIndicators items={items} />);
+      expect(wrapper.find('ol').length).toEqual(1);
+      expect(wrapper.find('li').length).toEqual(3);
+    });
+
+    it('should append the correct active class', () => {
+      const wrapper = mount(<CarouselIndicators items={items} activeIndex={0} />);
+      expect(wrapper.find('.active').length).toEqual(1);
+    });
+  });
+
+  describe('controls', () => {
+    it('should render an anchor tag', () => {
+      const wrapper = mount(<CarouselControl />);
+      expect(wrapper.find('a').length).toEqual(1);
+    });
+  });
 
   describe('rendering', () => {
     it('should show the carousel indicators', () => {
