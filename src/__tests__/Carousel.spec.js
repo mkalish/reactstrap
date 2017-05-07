@@ -36,7 +36,11 @@ describe('Carousel', () => {
     });
 
     it('should render a caption if one is passed in', () => {
-      const wrapper = mount(<CarouselItem src={items[0].src} altText={items[0].src} captionText="abc" />);
+      const wrapper = mount(
+        <CarouselItem src={items[0].src} altText={items[0].src}>
+          <CarouselCaption captionHeader="text" captionText="text" />
+        </CarouselItem>
+      );
       expect(wrapper.find(CarouselCaption).length).toEqual(1);
     });
 
@@ -131,173 +135,312 @@ describe('Carousel', () => {
 
   describe('rendering', () => {
     it('should show the carousel indicators', () => {
-      const wrapper = mount(<Carousel items={items} />);
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel activeIndex={0}>
+          <CarouselIndicators items={slides} activeIndex={0} />
+          {slides}
+        </Carousel>
+      );
+
       expect(wrapper.find(CarouselIndicators).length).toEqual(1);
     });
 
+    it('should show controls', () => {
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel activeIndex={0}>
+          {slides}
+          <CarouselControl direction="prev" directionText="Previous" />
+          <CarouselControl direction="next" directionText="Next" />
+        </Carousel>
+      );
+
+      expect(wrapper.find(CarouselControl).length).toEqual(2);
+    });
+
     it('should show a single slide', () => {
-      const wrapper = mount(<Carousel items={items} />);
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel activeIndex={0}>
+          {slides}
+        </Carousel>
+      );
       expect(wrapper.find(CarouselItem).length).toEqual(1);
     });
 
-    it('should show two controls', () => {
-      const wrapper = mount(<Carousel items={items} />);
+    it('should show indicators and controls', () => {
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel activeIndex={0}>
+          <CarouselIndicators items={slides} activeIndex={0} />
+          {slides}
+          <CarouselControl direction="prev" directionText="Previous" />
+          <CarouselControl direction="next" directionText="Next" />
+        </Carousel>
+      );
+
       expect(wrapper.find(CarouselControl).length).toEqual(2);
+      expect(wrapper.find(CarouselIndicators).length).toEqual(1);
     });
   });
 
   describe('carouseling', () => {
-    it('should default to zero as the active index', () => {
-      const wrapper = mount(<Carousel items={items} />);
-      expect(wrapper.state('activeIndex')).toEqual(0);
-      wrapper.unmount();
+    it('should go right when the index increases', () => {
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel interval={1000} activeIndex={0}>
+          {slides}
+        </Carousel>
+      );
+
+      wrapper.setProps({ activeIndex: 1 });
+      expect(wrapper.state().direction).toEqual('right');
     });
 
-    it('should accept an active index', () => {
-      const wrapper = mount(<Carousel items={items} activeIndex={1} />);
-      expect(wrapper.state('activeIndex')).toEqual(1);
-      wrapper.unmount();
+    it('should go left when the index decreases', () => {
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel interval={1000} activeIndex={1}>
+          {slides}
+        </Carousel>
+      );
+
+      wrapper.setProps({ activeIndex: 0 });
+      expect(wrapper.state().direction).toEqual('left');
     });
 
-    it('should change the active index on next', () => {
-      const wrapper = mount(<Carousel items={items} />);
-      wrapper.instance().next();
-      expect(wrapper.state('activeIndex')).toEqual(1);
-      wrapper.unmount();
+    it('should go right if transitioning from the last to first slide', () => {
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel interval={1000} activeIndex={2}>
+          {slides}
+        </Carousel>
+      );
+
+      wrapper.setProps({ activeIndex: 0 });
+      expect(wrapper.state().direction).toEqual('right');
     });
 
-    it('should change the active index on prev', () => {
-      const wrapper = mount(<Carousel items={items} activeIndex={1} />);
-      wrapper.instance().previous();
-      expect(wrapper.state('activeIndex')).toEqual(0);
-      wrapper.unmount();
-    });
+    it('should go left if transitioning from the first to last slide', () => {
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
 
-    it('cycle to zero when at the end of the items', () => {
-      const wrapper = mount(<Carousel items={items} activeIndex={2} />);
-      wrapper.instance().next();
-      expect(wrapper.state('activeIndex')).toEqual(0);
-      wrapper.unmount();
-    });
+      const wrapper = mount(
+        <Carousel interval={1000} activeIndex={0}>
+          {slides}
+        </Carousel>
+      );
 
-    it('cycle to the end of the items when at zero', () => {
-      const wrapper = mount(<Carousel items={items} activeIndex={0} />);
-      wrapper.instance().previous();
-      expect(wrapper.state('activeIndex')).toEqual(2);
-      wrapper.unmount();
-    });
-
-    it('should go to the specified index', () => {
-      const wrapper = mount(<Carousel items={items} activeIndex={0} />);
-      wrapper.instance().number(2);
-      expect(wrapper.state('activeIndex')).toEqual(2);
-      wrapper.unmount();
+      wrapper.setProps({ activeIndex: 2 });
+      expect(wrapper.state().direction).toEqual('left');
     });
   });
 
   describe('interval', () => {
+    it('should not cycle when paused', () => {
+      const next = jasmine.createSpy('next');
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel next={next} interval={1000} activeIndex={0} paused>
+          {slides}
+        </Carousel>
+      );
+      jasmine.clock().tick(1000);
+      expect(next).not.toHaveBeenCalled();
+      wrapper.unmount();
+    });
+
     it('should accept a number', () => {
-      const wrapper = mount(<Carousel items={items} interval={1000} />);
-      expect(wrapper.state('interval')).toEqual(1000);
+      const next = jasmine.createSpy('next');
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel next={next} interval={1000} activeIndex={0}>
+          {slides}
+        </Carousel>
+      );
+      jasmine.clock().tick(1000);
+      expect(next).toHaveBeenCalled();
       wrapper.unmount();
     });
 
     it('should accept a boolean', () => {
-      const wrapper = mount(<Carousel items={items} interval={false} />);
-      expect(wrapper.state('interval')).toEqual(false);
+      const next = jasmine.createSpy('next');
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel next={next} activeIndex={0} interval={false}>
+          {slides}
+        </Carousel>
+      );
+      jasmine.clock().tick(5000);
+      expect(next).not.toHaveBeenCalled();
       wrapper.unmount();
     });
 
     it('should default to 5000', () => {
-      const wrapper = mount(<Carousel items={items} />);
-      expect(wrapper.state('interval')).toEqual(5000);
+      const next = jasmine.createSpy('next');
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+
+      const wrapper = mount(
+        <Carousel next={next} activeIndex={0}>
+          {slides}
+        </Carousel>
+      );
+      jasmine.clock().tick(5000);
+      expect(next).toHaveBeenCalled();
       wrapper.unmount();
     });
 
-    it('should change the active index after the interval when cycle is present', () => {
-      const wrapper = mount(<Carousel items={items} cycle />);
-      expect(wrapper.state('activeIndex')).toEqual(0);
-      jasmine.clock().tick(5000);
-      expect(wrapper.state('activeIndex')).toEqual(1);
-    });
-
-    it('should change direction if not wrapping and at the end of the items', () => {
-      const wrapper = mount(<Carousel items={items} activeIndex={2} wrap={false} cycle />);
-      jasmine.clock().tick(5000);
-      expect(wrapper.state('activeIndex')).toEqual(1);
-      expect(wrapper.state('cycleDirection')).toEqual('left');
-    });
-
-    it('should change direction if not wrapping and at the end of the beginning of the items', () => {
-      const wrapper = mount(<Carousel items={items} wrap={false} cycle />);
-      jasmine.clock().tick(5000);
-      expect(wrapper.state('activeIndex')).toEqual(1);
-      expect(wrapper.state('cycleDirection')).toEqual('right');
-    });
-
-    it('should cycle in the appropriate direction', () => {
-      const wrapper = mount(<Carousel items={items} activeIndex={1} wrap={false} cycle />);
-      wrapper.setState({ cycleDirection: 'left' });
-      jasmine.clock().tick(5000);
-      expect(wrapper.state('activeIndex')).toEqual(0);
-    });
-  });
-
-  describe('hover', () => {
-    it('should pause cycling when hover is passed in', () => {
-      const wrapper = mount(<Carousel items={items} hover="hover" cycle />);
-      expect(wrapper.state('hover')).toEqual('hover');
-      expect(wrapper.state('cycle')).toEqual(true);
-      wrapper.instance().pause();
-      expect(wrapper.state('cycle')).toEqual(false);
-    });
-
-    it('should not pause cycling without hover', () => {
-      const wrapper = mount(<Carousel items={items} cycle />);
-      expect(wrapper.state('cycle')).toEqual(true);
-      wrapper.instance().pause();
-      expect(wrapper.state('cycle')).toEqual(true);
-    });
-
-    it('should not restart cycling without hover', () => {
-      const wrapper = mount(<Carousel items={items} hover="hover" cycle />);
-      expect(wrapper.state('cycle')).toEqual(true);
-      wrapper.instance().pause();
-      expect(wrapper.state('cycle')).toEqual(false);
-      wrapper.instance().cycle();
-      expect(wrapper.state('cycle')).toEqual(true);
-    });
-
-    it('should default hover to false', () => {
-      const wrapper = mount(<Carousel items={items} />);
-      expect(wrapper.state('hover')).toEqual(false);
-    });
-  });
-
-  describe('wrap', () => {
-    it('should default to true', () => {
-      const wrapper = mount(<Carousel items={items} />);
-      expect(wrapper.state('wrap')).toEqual(true);
-    });
-
-    it('should show the carousel controls when wrap is true', () => {
-      const wrapper = mount(<Carousel items={items} />);
-      expect(wrapper.find(CarouselControl).length).toEqual(2);
-    });
-
-    it('should show one carousel controls when active index is zero and wrap is false', () => {
-      const wrapper = mount(<Carousel items={items} wrap={false} />);
-      expect(wrapper.find(CarouselControl).length).toEqual(1);
-    });
-
-    it('should show one carousel controls when active index is the last item and wrap is false', () => {
-      const wrapper = mount(<Carousel items={items} activeIndex={2} wrap={false} />);
-      expect(wrapper.find(CarouselControl).length).toEqual(1);
-    });
-
-    it('should not show the carousel controls when active is ', () => {
-      const wrapper = mount(<Carousel items={items} activeIndex={1} wrap={false} />);
-      expect(wrapper.find(CarouselControl).length).toEqual(2);
+    it('it should accept a string', () => {
+      const next = jasmine.createSpy('next');
+      const slides = items.map((item, idx) => {
+        return (
+          <CarouselItem
+            key={idx}
+            src={item.src}
+            altText={item.altText}
+          >
+            <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          </CarouselItem>
+        );
+      });
+      const wrapper = mount(
+        <Carousel next={next} interval="1000" activeIndex={0}>
+          {slides}
+        </Carousel>
+      );
+      jasmine.clock().tick(1000);
+      expect(next).toHaveBeenCalled();
+      wrapper.unmount();
     });
   });
 });

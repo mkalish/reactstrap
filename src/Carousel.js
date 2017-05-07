@@ -2,33 +2,12 @@ import React, { PropTypes } from 'react';
 import classNames from 'classnames';
 import ReactTransitionGroup from 'react-addons-transition-group';
 import { mapToCssModules } from './utils';
-import CarouselControl from './CarouselControl';
-import CarouselItem from './CarouselItem';
-import CarouselIndicators from './CarouselIndicators';
-
 
 class Carousel extends React.Component {
 
   constructor(props) {
     super(props);
-
-    // Initial state with defaults
-    this.state = {
-      direction: 'right',
-      cycleDirection: 'right',
-      activeIndex: props.activeIndex || 0,
-      cycle: props.cycle || false,
-      wrap: props.wrap !== undefined ? props.wrap : true,
-      interval: props.interval !== undefined ? props.interval : 5000,
-      hover: props.hover || false
-    };
-
-    // Action handlers
-    this.previous = this.previous.bind(this);
-    this.next = this.next.bind(this);
-    this.number = this.number.bind(this);
-    this.cycle = this.cycle.bind(this);
-    this.pause = this.pause.bind(this);
+    this.state = { direction: 'right' };
   }
 
   getChildContext() {
@@ -37,26 +16,25 @@ class Carousel extends React.Component {
 
   componentDidMount() {
     // Set up the cycle
-    if (this.state.interval) {
+    if (this.props.interval) {
       this.cycleInterval = setInterval(() => {
-        if (this.state.cycle) {
-          if (this.state.activeIndex === this.props.items.length - 1 && !this.state.wrap) {
-            this.setState({
-              cycleDirection: 'left'
-            });
-            this.previous();
-          } else if (this.state.activeIndex === 0 && !this.state.wrap) {
-            this.setState({
-              cycleDirection: 'right'
-            });
-            this.next();
-          } else if (this.state.cycleDirection === 'right') {
-            this.next();
-          } else {
-            this.previous();
-          }
+        if (!this.props.paused) {
+          this.props.next();
         }
-      }, parseInt(this.state.interval, 10));
+      }, parseInt(this.props.interval, 10));
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    // Calculate the direction to turn
+    if (this.props.activeIndex + 1 === nextProps.activeIndex) {
+      this.setState({ direction: 'right' });
+    } else if (this.props.activeIndex - 1 === nextProps.activeIndex) {
+      this.setState({ direction: 'left' });
+    } else if (this.props.activeIndex > nextProps.activeIndex) {
+      this.setState({ direction: 'right' });
+    } else {
+      this.setState({ direction: 'left' });
     }
   }
 
@@ -64,67 +42,8 @@ class Carousel extends React.Component {
     clearInterval(this.cycleInterval);
   }
 
-  cycle() {
-    if (this.state.hover === 'hover') {
-      this.setState({
-        cycle: true
-      });
-    }
-  }
-
-  pause() {
-    if (this.state.hover === 'hover') {
-      this.setState({
-        cycle: false
-      });
-    }
-  }
-
-  number(index) {
-    this.setState({
-      activeIndex: index,
-      direction: 'left'
-    });
-  }
-
-  previous() {
-    const { activeIndex } = this.state;
-    const size = this.props.items.length;
-
-    if (activeIndex === 0) {
-      this.setState({
-        activeIndex: size - 1,
-        direction: 'left'
-      });
-    } else {
-      this.setState({
-        activeIndex: activeIndex - 1,
-        direction: 'left'
-      });
-    }
-  }
-
-  next() {
-    const { activeIndex } = this.state;
-    const size = this.props.items.length;
-
-    if (activeIndex === size - 1) {
-      this.setState({
-        activeIndex: 0,
-        direction: 'right'
-      });
-    } else {
-      this.setState({
-        activeIndex: activeIndex + 1,
-        direction: 'right'
-      });
-    }
-  }
-
   render() {
-    const { items, cssModule } = this.props;
-    const { activeIndex, direction, wrap } = this.state;
-
+    const { children, cssModule, activeIndex, hoverStart, hoverEnd } = this.props;
     const outerClasses = mapToCssModules(classNames(
           'carousel',
           'slide'
@@ -134,34 +53,53 @@ class Carousel extends React.Component {
           'carousel-inner'
       ), cssModule);
 
-    const carouselItems = items.map((item, idx) => {
-      return (<CarouselItem
-        mouseEnterHandler={this.pause}
-        mouseLeaveHandler={this.cycle}
-        direction={direction}
-        key={idx}
-        {...item}
-        cssModule={cssModule}
-      />);
+
+    const slidesOnly = children.every((child) => {
+      return child.type && child.type.name === 'CarouselItem';
     });
 
+    // Rendering only slides
+    if (slidesOnly) {
+      return (
+        <div className={outerClasses} onMouseEnter={hoverStart} onMouseLeave={hoverEnd}>
+          <ReactTransitionGroup component="div" role="listbox" className={innerClasses}>
+            {children[activeIndex]}
+          </ReactTransitionGroup>
+        </div>
+      );
+    }
+
+    // Rendering slides and controls
+    if (children[0] instanceof Array) {
+      const carouselItems = children[0];
+      const controlLeft = children[1];
+      const controlRight = children[2];
+
+      return (
+        <div className={outerClasses} onMouseEnter={hoverStart} onMouseLeave={hoverEnd}>
+          <ReactTransitionGroup component="div" role="listbox" className={innerClasses}>
+            {carouselItems[activeIndex]}
+          </ReactTransitionGroup>
+          {controlLeft}
+          {controlRight}
+        </div>
+      );
+    }
+
+    // Rendering indicators, slides and controls
+    const indicators = children[0];
+    const carouselItems = children[1];
+    const controlLeft = children[2];
+    const controlRight = children[3];
 
     return (
-      <div className={outerClasses}>
-        <CarouselIndicators {...this.props} activeIndex={activeIndex} onClickHandler={this.number} />
+      <div className={outerClasses} onMouseEnter={hoverStart} onMouseLeave={hoverEnd}>
+        {indicators}
         <ReactTransitionGroup component="div" role="listbox" className={innerClasses}>
           {carouselItems[activeIndex]}
         </ReactTransitionGroup>
-        {
-          (wrap || activeIndex !== 0) ?
-            <CarouselControl direction="prev" cssModule={cssModule} directionText="Previous" onClickHandler={this.previous} /> :
-            false
-        }
-        {
-         (wrap || activeIndex !== items.length - 1) ?
-           <CarouselControl direction="next" cssModule={cssModule} directionText="Next" onClickHandler={this.next} /> :
-           false
-        }
+        {controlLeft}
+        {controlRight}
       </div>
     );
   }
@@ -169,17 +107,24 @@ class Carousel extends React.Component {
 }
 
 Carousel.propTypes = {
-  items: PropTypes.array.isRequired,
+  paused: PropTypes.bool,
+  next: PropTypes.func.isRequired,
   cssModule: PropTypes.object,
   activeIndex: PropTypes.number,
-  cycle: PropTypes.bool,
-  wrap: PropTypes.bool,
   interval: PropTypes.oneOfType([
     PropTypes.number,
     PropTypes.string,
     PropTypes.bool
   ]),
-  hover: PropTypes.string
+  children: PropTypes.array,
+  hoverStart: PropTypes.func,
+  hoverEnd: PropTypes.func
+};
+
+Carousel.defaultProps = {
+  interval: 5000,
+  hover: false,
+  paused: false
 };
 
 Carousel.childContextTypes = {

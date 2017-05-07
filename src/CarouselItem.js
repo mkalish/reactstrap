@@ -10,6 +10,11 @@ class CarouselItem extends React.Component {
     this.state = { animation: [] };
   }
 
+  componentWillUnmount() {
+    clearTimeout(this.willEnterTimeout);
+    clearTimeout(this.willLeaveTimeout);
+  }
+
   componentWillAppear(callBack) {
     this.setState({
       animation: ['active']
@@ -58,14 +63,9 @@ class CarouselItem extends React.Component {
     this.slide.dispatchEvent(new CustomEvent('slid.bs.carousel'));
   }
 
-  componentWillUnmount() {
-    clearTimeout(this.willEnterTimeout);
-    clearTimeout(this.willLeaveTimeout);
-  }
-
 
   render() {
-    const { src, altText, captionText, cssModule, mouseEnterHandler, mouseLeaveHandler } = this.props;
+    const { src, altText, children, cssModule } = this.props;
     const classes = mapToCssModules(classNames(
         'd-block',
         'img-fluid'
@@ -74,14 +74,9 @@ class CarouselItem extends React.Component {
     const itemClasses = mapToCssModules(classNames('carousel-item', ...this.state.animation), cssModule);
 
     return (
-      <div className={itemClasses} onMouseEnter={mouseEnterHandler} onMouseLeave={mouseLeaveHandler} ref={(slide) => { this.slide = slide; }}>
+      <div className={itemClasses} ref={(slide) => { this.slide = slide; }}>
         <img className={classes} src={src} alt={altText} />
-        {
-              captionText ? (
-                <CarouselCaption {...this.props} />
-              ) :
-              false
-          }
+        {children}
       </div>
     );
   }
@@ -90,12 +85,8 @@ class CarouselItem extends React.Component {
 CarouselItem.propTypes = {
   src: PropTypes.string.isRequired,
   altText: PropTypes.string,
-  captionHeader: PropTypes.string,
   cssModule: PropTypes.object,
-  captionText: PropTypes.string,
-  direction: PropTypes.string,
-  mouseEnterHandler: PropTypes.func.isRequired,
-  mouseLeaveHandler: PropTypes.func.isRequired
+  children: PropTypes.instanceOf(CarouselCaption)
 };
 
 CarouselItem.contextTypes = {
