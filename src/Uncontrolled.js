@@ -1,4 +1,5 @@
 import React from 'react';
+import { warnOnce } from './utils';
 import Alert from './Alert';
 import ButtonDropdown from './ButtonDropdown';
 import Dropdown from './Dropdown';
@@ -14,7 +15,7 @@ const components = {
   UncontrolledTooltip: Tooltip,
 };
 
-Object.keys(components).forEach(key => {
+Object.keys(components).forEach((key) => {
   const Tag = components[key];
   const defaultValue = Tag === Alert;
 
@@ -32,6 +33,9 @@ Object.keys(components).forEach(key => {
     }
 
     render() {
+      if (key === 'UncontrolledNavDropdown') {
+        warnOnce('The "UncontrolledNavDropdown" component has been deprecated.\nPlease use component "UncontrolledDropdown" with nav prop.');
+      }
       return <Tag isOpen={this.state.isOpen} toggle={this.toggle} {...this.props} />;
     }
   }

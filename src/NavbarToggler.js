@@ -1,16 +1,14 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { mapToCssModules } from './utils';
 
-const { PropTypes } = React;
 const propTypes = {
   tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
   type: PropTypes.string,
   className: PropTypes.string,
   cssModule: PropTypes.object,
   children: PropTypes.node,
-  right: PropTypes.bool,
-  left: PropTypes.bool,
 };
 
 const defaultProps = {
@@ -18,29 +16,23 @@ const defaultProps = {
   type: 'button'
 };
 
-const navbarToggleIcon = <span className="navbar-toggler-icon" />;
-
 const NavbarToggler = (props) => {
   const {
     className,
     cssModule,
     children,
-    right,
-    left,
     tag: Tag,
     ...attributes
   } = props;
 
   const classes = mapToCssModules(classNames(
     className,
-    'navbar-toggler',
-    right && 'navbar-toggler-right',
-    left && 'navbar-toggler-left'
+    'navbar-toggler'
   ), cssModule);
 
   return (
     <Tag {...attributes} className={classes}>
-      {children || navbarToggleIcon}
+      {children || <span className={mapToCssModules('navbar-toggler-icon', cssModule)} />}
     </Tag>
   );
 };

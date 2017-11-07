@@ -1,110 +1,4 @@
-export function getTetherAttachments(placement) {
-  let attachments = {};
-  switch (placement) {
-    case 'top':
-    case 'top center':
-      attachments = {
-        attachment: 'bottom center',
-        targetAttachment: 'top center'
-      };
-      break;
-    case 'bottom':
-    case 'bottom center':
-      attachments = {
-        attachment: 'top center',
-        targetAttachment: 'bottom center'
-      };
-      break;
-    case 'left':
-    case 'left center':
-      attachments = {
-        attachment: 'middle right',
-        targetAttachment: 'middle left'
-      };
-      break;
-    case 'right':
-    case 'right center':
-      attachments = {
-        attachment: 'middle left',
-        targetAttachment: 'middle right'
-      };
-      break;
-    case 'top left':
-      attachments = {
-        attachment: 'bottom left',
-        targetAttachment: 'top left'
-      };
-      break;
-    case 'top right':
-      attachments = {
-        attachment: 'bottom right',
-        targetAttachment: 'top right'
-      };
-      break;
-    case 'bottom left':
-      attachments = {
-        attachment: 'top left',
-        targetAttachment: 'bottom left'
-      };
-      break;
-    case 'bottom right':
-      attachments = {
-        attachment: 'top right',
-        targetAttachment: 'bottom right'
-      };
-      break;
-    case 'right top':
-      attachments = {
-        attachment: 'top left',
-        targetAttachment: 'top right'
-      };
-      break;
-    case 'right bottom':
-      attachments = {
-        attachment: 'bottom left',
-        targetAttachment: 'bottom right'
-      };
-      break;
-    case 'left top':
-      attachments = {
-        attachment: 'top right',
-        targetAttachment: 'top left'
-      };
-      break;
-    case 'left bottom':
-      attachments = {
-        attachment: 'bottom right',
-        targetAttachment: 'bottom left'
-      };
-      break;
-    default:
-      attachments = {
-        attachment: 'top center',
-        targetAttachment: 'bottom center'
-      };
-  }
-
-  return attachments;
-}
-
-export const tetherAttachements = [
-  'top',
-  'bottom',
-  'left',
-  'right',
-  'top left',
-  'top center',
-  'top right',
-  'right top',
-  'right middle',
-  'right bottom',
-  'bottom right',
-  'bottom center',
-  'bottom left',
-  'left top',
-  'left middle',
-  'left bottom'
-];
+import isFunction from 'lodash.isfunction';
 
 // https://github.com/twbs/bootstrap/blob/v4.0.0-alpha.4/js/src/modal.js#L436-L443
 export function getScrollbarWidth() {
@@ -138,8 +32,8 @@ export function getOriginalBodyPadding() {
 
 export function conditionallyUpdateScrollbar() {
   const scrollbarWidth = getScrollbarWidth();
-  // https://github.com/twbs/bootstrap/blob/v4.0.0-alpha.4/js/src/modal.js#L420
-  const fixedContent = document.querySelectorAll('.navbar-fixed-top, .navbar-fixed-bottom, .is-fixed')[0];
+  // https://github.com/twbs/bootstrap/blob/v4.0.0-alpha.6/js/src/modal.js#L433
+  const fixedContent = document.querySelectorAll('.fixed-top, .fixed-bottom, .is-fixed, .sticky-top')[0];
   const bodyPadding = fixedContent ? parseInt(
     fixedContent.style.paddingRight || 0,
     10
@@ -154,3 +48,146 @@ export function mapToCssModules(className, cssModule) {
   if (!cssModule) return className;
   return className.split(' ').map(c => cssModule[c] || c).join(' ');
 }
+
+/**
+ * Returns a new object with the key/value pairs from `obj` that are not in the array `omitKeys`.
+ */
+export function omit(obj, omitKeys) {
+  const result = {};
+  Object.keys(obj).forEach((key) => {
+    if (omitKeys.indexOf(key) === -1) {
+      result[key] = obj[key];
+    }
+  });
+  return result;
+}
+
+/**
+ * Returns a filtered copy of an object with only the specified keys.
+ */
+export function pick(obj, keys) {
+  const pickKeys = Array.isArray(keys) ? keys : [keys];
+  let length = pickKeys.length;
+  let key;
+  const result = {};
+
+  while (length > 0) {
+    length -= 1;
+    key = pickKeys[length];
+    result[key] = obj[key];
+  }
+  return result;
+}
+
+let warned = {};
+
+export function warnOnce(message) {
+  if (!warned[message]) {
+    /* istanbul ignore else */
+    if (typeof console !== 'undefined') {
+      console.error(message); // eslint-disable-line no-console
+    }
+    warned[message] = true;
+  }
+}
+
+export function deprecated(propType, explanation) {
+  return function validate(props, propName, componentName, ...rest) {
+    if (props[propName] !== null && typeof props[propName] !== 'undefined') {
+      warnOnce(`"${propName}" property of "${componentName}" has been deprecated.\n${explanation}`);
+    }
+
+    return propType(props, propName, componentName, ...rest);
+  };
+}
+
+export function DOMElement(props, propName, componentName) {
+  if (!(props[propName] instanceof Element)) {
+    return new Error(
+      'Invalid prop `' + propName + '` supplied to `' + componentName +
+      '`. Expected prop to be an instance of Element. Validation failed.'
+    );
+  }
+}
+
+export function getTarget(target) {
+  if (isFunction(target)) {
+    return target();
+  }
+
+  if (typeof target === 'string' && document) {
+    let selection = document.querySelector(target);
+    if (selection === null) {
+      selection = document.querySelector(`#${target}`);
+    }
+    if (selection === null) {
+      throw new Error(`The target '${target}' could not be identified in the dom, tip: check spelling`);
+    }
+    return selection;
+  }
+
+  return target;
+}
+
+
+/* eslint key-spacing: ["error", { afterColon: true, align: "value" }] */
+// These are all setup to match what is in the bootstrap _variables.scss
+// https://github.com/twbs/bootstrap/blob/v4-dev/scss/_variables.scss
+export const TransitionTimeouts = {
+  Fade:     150, // $transition-fade
+  Collapse: 350, // $transition-collapse
+  Modal:    300, // $modal-transition
+  Carousel: 600, // $carousel-transition
+};
+
+// Duplicated Transition.propType keys to ensure that Reactstrap builds
+// for distribution properly exclude these keys for nested child HTML attributes
+// since `react-transition-group` removes propTypes in production builds.
+export const TransitionPropTypeKeys = [
+  'in',
+  'mountOnEnter',
+  'unmountOnExit',
+  'appear',
+  'enter',
+  'exit',
+  'timeout',
+  'onEnter',
+  'onEntering',
+  'onEntered',
+  'onExit',
+  'onExiting',
+  'onExited',
+];
+
+export const TransitionStatuses = {
+  ENTERING: 'entering',
+  ENTERED:  'entered',
+  EXITING:  'exiting',
+  EXITED:   'exited',
+};
+
+export const keyCodes = {
+  esc:   27,
+  space: 32,
+  tab:   9,
+  up:    38,
+  down:  40,
+};
+
+export const PopperPlacements = [
+  'auto-start',
+  'auto',
+  'auto-end',
+  'top-start',
+  'top',
+  'top-end',
+  'right-start',
+  'right',
+  'right-end',
+  'bottom-end',
+  'bottom',
+  'bottom-start',
+  'left-end',
+  'left',
+  'left-start',
+];

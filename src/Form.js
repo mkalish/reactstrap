@@ -1,13 +1,13 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { mapToCssModules } from './utils';
 
-const { PropTypes } = React;
 const propTypes = {
   children: PropTypes.node,
   inline: PropTypes.bool,
   tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
-  getRef: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+  innerRef: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
   className: PropTypes.string,
   cssModule: PropTypes.object,
 };
@@ -22,8 +22,8 @@ const Form = (props) => {
     cssModule,
     inline,
     tag: Tag,
-    getRef,
-    ...attributes,
+    innerRef,
+    ...attributes
   } = props;
 
   const classes = mapToCssModules(classNames(
@@ -32,7 +32,7 @@ const Form = (props) => {
   ), cssModule);
 
   return (
-    <Tag {...attributes} ref={getRef} className={classes} />
+    <Tag {...attributes} ref={innerRef} className={classes} />
   );
 };
 

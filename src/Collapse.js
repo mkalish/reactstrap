@@ -1,160 +1,143 @@
-import React from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import omit from 'lodash.omit';
-import { mapToCssModules } from './utils';
-
-const { PropTypes, Component } = React;
-const SHOW = 'SHOW';
-const SHOWN = 'SHOWN';
-const HIDE = 'HIDE';
-const HIDDEN = 'HIDDEN';
+import Transition from 'react-transition-group/Transition';
+import { mapToCssModules, omit, pick, TransitionTimeouts, TransitionPropTypeKeys, TransitionStatuses } from './utils';
 
 const propTypes = {
+  ...Transition.propTypes,
   isOpen: PropTypes.bool,
-  className: PropTypes.node,
-  tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
-  cssModule: PropTypes.object,
-  navbar: PropTypes.bool,
-  delay: PropTypes.oneOfType([
-    PropTypes.shape({ show: PropTypes.number, hide: PropTypes.number }),
-    PropTypes.number,
+  children: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.node),
+    PropTypes.node
   ]),
-  onOpened: PropTypes.func,
-  onClosed: PropTypes.func,
-};
-
-const DEFAULT_DELAYS = {
-  show: 350,
-  hide: 350
+  tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+  className: PropTypes.node,
+  navbar: PropTypes.bool,
+  cssModule: PropTypes.object,
 };
 
 const defaultProps = {
+  ...Transition.defaultProps,
   isOpen: false,
+  appear: false,
+  enter: true,
+  exit: true,
   tag: 'div',
-  delay: DEFAULT_DELAYS,
-  onOpened: () => {},
-  onClosed: () => {},
+  timeout: TransitionTimeouts.Collapse,
 };
+
+const transitionStatusToClassHash = {
+  [TransitionStatuses.ENTERING]: 'collapsing',
+  [TransitionStatuses.ENTERED]: 'collapse show',
+  [TransitionStatuses.EXITING]: 'collapsing',
+  [TransitionStatuses.EXITED]: 'collapse',
+};
+
+function getTransitionClass(status) {
+  return transitionStatusToClassHash[status] || 'collapse';
+}
+
+function getHeight(node) {
+  return node.scrollHeight;
+}
 
 class Collapse extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      collapse: props.isOpen ? SHOWN : HIDDEN,
       height: null
     };
-    this.element = null;
+
+    ['onEntering', 'onEntered', 'onExit', 'onExiting', 'onExited'].forEach((name) => {
+      this[name] = this[name].bind(this);
+    });
   }
 
-  componentWillReceiveProps(nextProps) {
-    const willOpen = nextProps.isOpen;
-    const collapse = this.state.collapse;
-
-    if (willOpen && collapse === HIDDEN) {
-      // will open
-      this.setState({ collapse: SHOW }, () => {
-        // the height transition will work after class "collapsing" applied
-        this.setState({ height: this.getHeight() });
-        this.transitionTag = setTimeout(() => {
-          this.setState({
-            collapse: SHOWN,
-            height: null
-          });
-        }, this.getDelay('show'));
-      });
-    } else if (!willOpen && collapse === SHOWN) {
-      // will hide
-      this.setState({ height: this.getHeight() }, () => {
-        this.setState({
-          collapse: HIDE,
-          height: this.getHeight()
-        }, () => {
-          this.setState({ height: 0 });
-        });
-      });
-
-      this.transitionTag = setTimeout(() => {
-        this.setState({
-          collapse: HIDDEN,
-          height: null
-        });
-      }, this.getDelay('hide'));
-    }
-    // else: do nothing.
+  onEntering(node, isAppearing) {
+    this.setState({ height: getHeight(node) });
+    this.props.onEntering(node, isAppearing);
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.collapse === SHOWN &&
-        prevState &&
-        prevState.collapse !== SHOWN) {
-      this.props.onOpened();
-    }
-
-    if (this.state.collapse === HIDDEN &&
-        prevState &&
-        prevState.collapse !== HIDDEN) {
-      this.props.onClosed();
-    }
+  onEntered(node, isAppearing) {
+    this.setState({ height: null });
+    this.props.onEntered(node, isAppearing);
   }
 
-  componentWillUnmount() {
-    clearTimeout(this.transitionTag);
+  onExit(node) {
+    this.setState({ height: getHeight(node) });
+    this.props.onExit(node);
   }
 
-  getDelay(key) {
-    const { delay } = this.props;
-    if (typeof delay === 'object') {
-      return isNaN(delay[key]) ? DEFAULT_DELAYS[key] : delay[key];
-    }
-    return delay;
+  onExiting(node) {
+    // getting this variable triggers a reflow
+    const _unused = node.offsetHeight; // eslint-disable-line no-unused-vars
+    this.setState({ height: 0 });
+    this.props.onExiting(node);
   }
 
-  getHeight() {
-    return this.element.scrollHeight;
+  onExited(node) {
+    this.setState({ height: null });
+    this.props.onExited(node);
   }
 
   render() {
     const {
-      navbar,
-      className,
-      cssModule,
       tag: Tag,
-      ...attributes
-    } = omit(this.props, ['isOpen', 'delay', 'onOpened', 'onClosed']);
-    const { collapse, height } = this.state;
-    let collapseClass;
-    switch (collapse) {
-      case SHOW:
-        collapseClass = 'collapsing';
-        break;
-      case SHOWN:
-        collapseClass = 'collapse show';
-        break;
-      case HIDE:
-        collapseClass = 'collapsing';
-        break;
-      case HIDDEN:
-        collapseClass = 'collapse';
-        break;
-      default:
-      // HIDDEN
-        collapseClass = 'collapse';
-    }
-
-    const classes = mapToCssModules(classNames(
+      isOpen,
       className,
-      collapseClass,
-      navbar && 'navbar-collapse'
-    ), cssModule);
-    const style = height === null ? null : { height };
+      navbar,
+      cssModule,
+      children,
+      ...otherProps
+    } = this.props;
+
+    const { height } = this.state;
+
+    // In NODE_ENV=production the Transition.propTypes are wrapped which results in an
+    // empty object "{}". This is the result of the `react-transition-group` babel
+    // configuration settings. Therefore, to ensure that production builds work without
+    // error, we can either explicitly define keys or use the Transition.defaultProps.
+    // Using the Transition.defaultProps excludes any required props. Thus, the best
+    // solution is to explicitly define required props in our utilities and reference these.
+    // This also gives us more flexibility in the future to remove the prop-types
+    // dependency in distribution builds (Similar to how `react-transition-group` does).
+    // Note: Without omitting the `react-transition-group` props, the resulting child
+    // Tag component would inherit the Transition properties as attributes for the HTML
+    // element which results in errors/warnings for non-valid attributes.
+    const transitionProps = pick(otherProps, TransitionPropTypeKeys);
+    const childProps = omit(otherProps, TransitionPropTypeKeys);
+
     return (
-      <Tag
-        {...attributes}
-        style={{ ...attributes.style, ...style }}
-        className={classes}
-        ref={(c) => { this.element = c; }}
-      />
+      <Transition
+        {...transitionProps}
+        in={isOpen}
+        onEntering={this.onEntering}
+        onEntered={this.onEntered}
+        onExit={this.onExit}
+        onExiting={this.onExiting}
+        onExited={this.onExited}
+      >
+        {(status) => {
+          let collapseClass = getTransitionClass(status);
+          const classes = mapToCssModules(classNames(
+            className,
+            collapseClass,
+            navbar && 'navbar-collapse'
+          ), cssModule);
+          const style = height === null ? null : { height };
+          return (
+            <Tag
+              {...childProps}
+              style={{ ...childProps.style, ...style }}
+              className={classes}
+            >
+              {children}
+            </Tag>
+          );
+        }}
+      </Transition>
     );
   }
 }

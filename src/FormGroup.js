@@ -1,15 +1,15 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { mapToCssModules } from './utils';
 
-const { PropTypes } = React;
 const propTypes = {
   children: PropTypes.node,
   row: PropTypes.bool,
   check: PropTypes.bool,
+  inline: PropTypes.bool,
   disabled: PropTypes.bool,
   tag: PropTypes.string,
-  color: PropTypes.string,
   className: PropTypes.string,
   cssModule: PropTypes.object,
 };
@@ -24,17 +24,17 @@ const FormGroup = (props) => {
     cssModule,
     row,
     disabled,
-    color,
     check,
+    inline,
     tag: Tag,
-    ...attributes,
+    ...attributes
   } = props;
 
   const classes = mapToCssModules(classNames(
     className,
-    color ? `has-${color}` : false,
     row ? 'row' : false,
     check ? 'form-check' : 'form-group',
+    check && inline ? 'form-check-inline' : false,
     check && disabled ? 'disabled' : false
   ), cssModule);
 

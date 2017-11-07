@@ -1,47 +1,45 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { mapToCssModules } from './utils';
-
-const { PropTypes } = React;
-const FirstChild = ({ children }) => (
-  React.Children.toArray(children)[0] || null
-);
+import Fade from './Fade';
 
 const propTypes = {
   children: PropTypes.node,
   className: PropTypes.string,
+  closeClassName: PropTypes.string,
+  closeAriaLabel: PropTypes.string,
   cssModule: PropTypes.object,
   color: PropTypes.string,
   isOpen: PropTypes.bool,
   toggle: PropTypes.func,
   tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
-  transitionAppearTimeout: PropTypes.number,
-  transitionEnterTimeout: PropTypes.number,
-  transitionLeaveTimeout: PropTypes.number,
+  transition: PropTypes.shape(Fade.propTypes),
 };
 
 const defaultProps = {
   color: 'success',
   isOpen: true,
   tag: 'div',
-  transitionAppearTimeout: 150,
-  transitionEnterTimeout: 150,
-  transitionLeaveTimeout: 150
+  closeAriaLabel: 'Close',
+  transition: {
+    ...Fade.defaultProps,
+    unmountOnExit: true,
+  },
 };
 
-const Alert = (props) => {
+function Alert(props) {
   const {
     className,
+    closeClassName,
+    closeAriaLabel,
     cssModule,
     tag: Tag,
     color,
     isOpen,
     toggle,
     children,
-    transitionAppearTimeout,
-    transitionEnterTimeout,
-    transitionLeaveTimeout,
+    transition,
     ...attributes
   } = props;
 
@@ -52,39 +50,19 @@ const Alert = (props) => {
     { 'alert-dismissible': toggle }
   ), cssModule);
 
-  const alert = (
-    <Tag {...attributes} className={classes} role="alert">
-      { toggle ?
-        <button type="button" className="close" aria-label="Close" onClick={toggle}>
-          <span aria-hidden="true">&times;</span>
-        </button>
-        : null }
-      { children }
-    </Tag>
-  );
+  const closeClasses = mapToCssModules(classNames('close', closeClassName), cssModule);
 
   return (
-    <ReactCSSTransitionGroup
-      component={FirstChild}
-      transitionName={{
-        appear: 'fade',
-        appearActive: 'show',
-        enter: 'fade',
-        enterActive: 'show',
-        leave: 'fade',
-        leaveActive: 'out'
-      }}
-      transitionAppear={transitionAppearTimeout > 0}
-      transitionAppearTimeout={transitionAppearTimeout}
-      transitionEnter={transitionEnterTimeout > 0}
-      transitionEnterTimeout={transitionEnterTimeout}
-      transitionLeave={transitionLeaveTimeout > 0}
-      transitionLeaveTimeout={transitionLeaveTimeout}
-    >
-      {isOpen ? alert : null}
-    </ReactCSSTransitionGroup>
+    <Fade {...attributes} {...transition} tag={Tag} className={classes} in={isOpen} role="alert">
+      {toggle ?
+        <button type="button" className={closeClasses} aria-label={closeAriaLabel} onClick={toggle}>
+          <span aria-hidden="true">&times;</span>
+        </button>
+        : null}
+      {children}
+    </Fade>
   );
-};
+}
 
 Alert.propTypes = propTypes;
 Alert.defaultProps = defaultProps;

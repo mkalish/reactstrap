@@ -29,14 +29,14 @@ export default () => {
         </Container>
       </Jumbotron>
       <Container>
-        <Row>
-          <Col sm={{ size: 8, offset: 2 }}>
+        <Row className="justify-content-sm-center">
+          <Col sm={8}>
             <h2>Installation</h2>
             <hr />
             <h3 className="mt-5">NPM</h3>
             <p>Install reactstrap and peer dependencies via NPM</p>
             <pre>
-              <PrismCode className="language-bash">npm install --save reactstrap react-addons-transition-group react-addons-css-transition-group react react-dom</PrismCode>
+              <PrismCode className="language-bash">npm install --save reactstrap@next react react-dom</PrismCode>
             </pre>
             <p>Import the components you need</p>
             <div className="docs-example">
@@ -66,8 +66,8 @@ npm start`}
             <p>Install reactstrap and Bootstrap from NPM. Reactstrap does not include Bootstrap CSS so this needs to be installed as well:</p>
             <pre>
               <PrismCode className="language-bash">
-  {`npm install bootstrap@4.0.0-alpha.6 --save
-npm install --save reactstrap react-addons-transition-group react-addons-css-transition-group react react-dom`}
+  {`npm install bootstrap@4.0.0-beta --save
+npm install --save reactstrap@next react react-dom`}
               </PrismCode>
             </pre>
             <p>Import Bootstrap CSS in the <code>src/index.js</code> file:</p>
@@ -82,15 +82,25 @@ npm install --save reactstrap react-addons-transition-group react-addons-css-tra
             </pre>
             <p>Now you are ready to use the imported reactstrap components within your component hierarchy defined in the render method. Here is an example <a href="https://gist.github.com/eddywashere/e13033c0e655ab7cda995f8bc77ce40d" target="_blank"><code>App.js</code></a> redone using reactstrap.</p>
             <h2 className="mt-5">CDN</h2>
+            <p>Reactstrap can be included directly in your application's bundle or excluded during compilation and linked directly to a CDN.</p>
             <pre>
               <PrismCode className="language-jsx">
-                https://unpkg.com/reactstrap/dist/reactstrap.min.js
+                https://cdnjs.cloudflare.com/ajax/libs/reactstrap/4.8.0/reactstrap.min.js
               </PrismCode>
             </pre>
+            <blockquote className="blockquote">
+              <p>
+                <strong>Note</strong>: When using the external CDN library, be sure to include the required dependencies as necessary <strong>prior</strong> to the Reactstrap library:
+              </p>
+              <ul>
+                <li><a href="//cdnjs.com/libraries/react" target="_blank">React</a></li>
+                <li><a href="//unpkg.com/react-transition-group/dist/react-transition-group.min.js" target="_blank">ReactTransitionGroup</a></li>
+              </ul>
+            </blockquote>
             <p>Check out the demo <a href="http://output.jsbin.com/dimive/latest">here</a></p>
             <h2 className="mt-5">About the Project</h2>
             <hr />
-            <p>This library contains React Bootstrap 4 components that favor composition and control. The library does not depend on jQuery or Bootstrap javascript. However, <a href="http://tether.io/" target="_blank">Tether</a> is relied upon for advanced positioning of content like Tooltips, Popovers, and auto-flipping Dropdowns.</p>
+            <p>This library contains React Bootstrap 4 components that favor composition and control. The library does not depend on jQuery or Bootstrap javascript. However, <a href="https://popper.js.org/">https://popper.js.org/</a> via <a href="https://github.com/souporserious/react-popper">https://github.com/souporserious/react-popper</a> is relied upon for advanced positioning of content like Tooltips, Popovers, and auto-flipping Dropdowns.</p>
             <p>There are a few core concepts to understand in order to make the most out of this library.</p>
             <p>1) Your content is expected to be composed via props.children rather than using named props to pass in Components.</p>
             <pre>
@@ -116,7 +126,7 @@ const PreferredExample = (props) => {
               </PrismCode>
             </pre>
             <p>
-              2) Attributes in this library are used to pass in state, conveniently apply modifier classes, enable advanced functionality (like tether), or automatically include non-content based elements.
+              2) Attributes in this library are used to pass in state, conveniently apply modifier classes, enable advanced functionality (like popperjs), or automatically include non-content based elements.
             </p>
             <p>Examples:</p>
             <ul>

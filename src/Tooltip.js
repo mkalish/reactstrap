@@ -1,24 +1,29 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import omit from 'lodash.omit';
-import TetherContent from './TetherContent';
-import { getTetherAttachments, tetherAttachements, mapToCssModules } from './utils';
+import PopperContent from './PopperContent';
+import { getTarget, DOMElement, mapToCssModules, omit, PopperPlacements } from './utils';
 
-const { PropTypes } = React;
 const propTypes = {
-  placement: React.PropTypes.oneOf(tetherAttachements),
+  placement: PropTypes.oneOf(PopperPlacements),
   target: PropTypes.oneOfType([
     PropTypes.string,
-    PropTypes.object
+    PropTypes.func,
+    DOMElement,
   ]).isRequired,
+  container: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.func,
+    DOMElement,
+  ]),
   isOpen: PropTypes.bool,
   disabled: PropTypes.bool,
-  tether: PropTypes.object,
-  tetherRef: PropTypes.func,
   className: PropTypes.string,
+  innerClassName: PropTypes.string,
   cssModule: PropTypes.object,
   toggle: PropTypes.func,
   autohide: PropTypes.bool,
+  placementPrefix: PropTypes.string,
   delay: PropTypes.oneOfType([
     PropTypes.shape({ show: PropTypes.number, hide: PropTypes.number }),
     PropTypes.number,
@@ -32,22 +37,11 @@ const DEFAULT_DELAYS = {
 
 const defaultProps = {
   isOpen: false,
-  placement: 'bottom',
+  placement: 'top',
+  placementPrefix: 'bs-tooltip',
   delay: DEFAULT_DELAYS,
   autohide: true,
   toggle: function () {}
-};
-
-const defaultTetherConfig = {
-  classPrefix: 'bs-tether',
-  classes: {
-    element: false,
-    enabled: 'show',
-  },
-  constraints: [
-    { to: 'scrollParent', attachment: 'together none' },
-    { to: 'window', attachment: 'together none' }
-  ]
 };
 
 class Tooltip extends React.Component {
@@ -55,8 +49,6 @@ class Tooltip extends React.Component {
     super(props);
 
     this.addTargetEvents = this.addTargetEvents.bind(this);
-    this.getTarget = this.getTarget.bind(this);
-    this.getTetherConfig = this.getTetherConfig.bind(this);
     this.handleDocumentClick = this.handleDocumentClick.bind(this);
     this.removeTargetEvents = this.removeTargetEvents.bind(this);
     this.toggle = this.toggle.bind(this);
@@ -69,7 +61,7 @@ class Tooltip extends React.Component {
   }
 
   componentDidMount() {
-    this._target = this.getTarget();
+    this._target = getTarget(this.props.target);
     this.addTargetEvents();
   }
 
@@ -118,24 +110,6 @@ class Tooltip extends React.Component {
     return delay;
   }
 
-  getTarget() {
-    const { target } = this.props;
-    if (typeof target === 'object') {
-      return target;
-    }
-    return document.getElementById(target);
-  }
-
-  getTetherConfig() {
-    const attachments = getTetherAttachments(this.props.placement);
-    return {
-      ...defaultTetherConfig,
-      ...attachments,
-      target: this.getTarget,
-      ...this.props.tether
-    };
-  }
-
   show() {
     if (!this.props.isOpen) {
       this.clearShowTimeout();
@@ -175,13 +149,17 @@ class Tooltip extends React.Component {
   addTargetEvents() {
     this._target.addEventListener('mouseover', this.onMouseOverTooltip, true);
     this._target.addEventListener('mouseout', this.onMouseLeaveTooltip, true);
-    document.addEventListener('click', this.handleDocumentClick, true);
+    ['click', 'touchstart'].forEach(event =>
+      document.addEventListener(event, this.handleDocumentClick, true)
+    );
   }
 
   removeTargetEvents() {
     this._target.removeEventListener('mouseover', this.onMouseOverTooltip, true);
     this._target.removeEventListener('mouseout', this.onMouseLeaveTooltip, true);
-    document.removeEventListener('click', this.handleDocumentClick, true);
+    ['click', 'touchstart'].forEach(event =>
+      document.removeEventListener(event, this.handleDocumentClick, true)
+    );
   }
 
   toggle(e) {
@@ -200,18 +178,23 @@ class Tooltip extends React.Component {
     const attributes = omit(this.props, Object.keys(propTypes));
     const classes = mapToCssModules(classNames(
       'tooltip-inner',
+      this.props.innerClassName
+    ), this.props.cssModule);
+
+    const popperClasses = mapToCssModules(classNames(
+      'tooltip',
+      'show',
       this.props.className
     ), this.props.cssModule);
 
-    let tetherConfig = this.getTetherConfig();
-
     return (
-      <TetherContent
-        className="tooltip"
-        tether={tetherConfig}
-        tetherRef={this.props.tetherRef}
+      <PopperContent
+        className={popperClasses}
+        target={this.props.target}
         isOpen={this.props.isOpen}
-        toggle={this.toggle}
+        placement={this.props.placement}
+        placementPrefix={this.props.placementPrefix}
+        container={this.props.container}
       >
         <div
           {...attributes}
@@ -219,7 +202,7 @@ class Tooltip extends React.Component {
           onMouseOver={this.onMouseOverTooltipContent}
           onMouseLeave={this.onMouseLeaveTooltipContent}
         />
-      </TetherContent>
+      </PopperContent>
     );
   }
 }

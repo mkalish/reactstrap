@@ -1,12 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { mapToCssModules } from './utils';
 
-const { PropTypes } = React;
 const propTypes = {
   children: PropTypes.node,
   inline: PropTypes.bool,
-  tag: PropTypes.string,
+  tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
   color: PropTypes.string,
   className: PropTypes.string,
   cssModule: PropTypes.object,
@@ -14,6 +14,7 @@ const propTypes = {
 
 const defaultProps = {
   tag: 'small',
+  color: 'muted',
 };
 
 const FormText = (props) => {
@@ -23,7 +24,7 @@ const FormText = (props) => {
     inline,
     color,
     tag: Tag,
-    ...attributes,
+    ...attributes
   } = props;
 
   const classes = mapToCssModules(classNames(

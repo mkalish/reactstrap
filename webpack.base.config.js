@@ -55,14 +55,6 @@ module.exports = function (env) {
           commonjs: 'react-dom',
           amd: 'react-dom'
         }
-      },
-      {
-        'react-addons-transition-group': {
-          commonjs: 'react-addons-transition-group',
-          commonjs2: 'react-addons-transition-group',
-          amd: 'react-addons-transition-group',
-          root: ['React', 'addons', 'TransitionGroup']
-        }
       }
     ],
     module: {

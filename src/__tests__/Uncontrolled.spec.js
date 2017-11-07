@@ -4,12 +4,10 @@ import {
   Alert,
   ButtonDropdown,
   Dropdown,
-  NavDropdown,
   Tooltip,
   UncontrolledAlert,
   UncontrolledButtonDropdown,
   UncontrolledDropdown,
-  UncontrolledNavDropdown,
   UncontrolledTooltip,
 } from '../';
 
@@ -26,7 +24,7 @@ describe('UncontrolledAlert', () => {
 
   it('should have toggle function', () => {
     const alert = shallow(<UncontrolledAlert>Yo!</UncontrolledAlert>);
-    expect(alert.prop('toggle')).toEqual(jasmine.any(Function));
+    expect(alert.prop('toggle')).toEqual(expect.any(Function));
   });
 
   it('should toggle isOpen when toggle is called', () => {
@@ -50,7 +48,7 @@ describe('UncontrolledButtonDropdown', () => {
 
   it('should have toggle function', () => {
     const buttonDropdown = shallow(<UncontrolledButtonDropdown>Yo!</UncontrolledButtonDropdown>);
-    expect(buttonDropdown.prop('toggle')).toEqual(jasmine.any(Function));
+    expect(buttonDropdown.prop('toggle')).toEqual(expect.any(Function));
   });
 
   it('should toggle isOpen when toggle is called', () => {
@@ -74,7 +72,7 @@ describe('UncontrolledDropdown', () => {
 
   it('should have toggle function', () => {
     const dropdown = shallow(<UncontrolledDropdown>Yo!</UncontrolledDropdown>);
-    expect(dropdown.prop('toggle')).toEqual(jasmine.any(Function));
+    expect(dropdown.prop('toggle')).toEqual(expect.any(Function));
   });
 
   it('should toggle isOpen when toggle is called', () => {
@@ -82,30 +80,6 @@ describe('UncontrolledDropdown', () => {
     const instance = dropdown.instance();
     instance.toggle();
     expect(dropdown.prop('isOpen')).toBe(true);
-  });
-});
-
-describe('UncontrolledNavDropdown', () => {
-  it('should be an NavDropdown', () => {
-    const navDropdown = shallow(<UncontrolledNavDropdown>Yo!</UncontrolledNavDropdown>);
-    expect(navDropdown.type()).toBe(NavDropdown);
-  });
-
-  it('should have isOpen default to false', () => {
-    const navDropdown = shallow(<UncontrolledNavDropdown>Yo!</UncontrolledNavDropdown>);
-    expect(navDropdown.prop('isOpen')).toBe(false);
-  });
-
-  it('should have toggle function', () => {
-    const navDropdown = shallow(<UncontrolledNavDropdown>Yo!</UncontrolledNavDropdown>);
-    expect(navDropdown.prop('toggle')).toEqual(jasmine.any(Function));
-  });
-
-  it('should toggle isOpen when toggle is called', () => {
-    const navDropdown = shallow(<UncontrolledNavDropdown>Yo!</UncontrolledNavDropdown>);
-    const instance = navDropdown.instance();
-    instance.toggle();
-    expect(navDropdown.prop('isOpen')).toBe(true);
   });
 });
 
@@ -122,7 +96,7 @@ describe('UncontrolledTooltip', () => {
 
   it('should have toggle function', () => {
     const tooltip = shallow(<UncontrolledTooltip target="blah">Yo!</UncontrolledTooltip>);
-    expect(tooltip.prop('toggle')).toEqual(jasmine.any(Function));
+    expect(tooltip.prop('toggle')).toEqual(expect.any(Function));
   });
 
   it('should toggle isOpen when toggle is called', () => {

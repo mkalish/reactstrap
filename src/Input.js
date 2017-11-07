@@ -1,18 +1,21 @@
 /* eslint react/prefer-stateless-function: 0 */
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { mapToCssModules } from './utils';
+import { mapToCssModules, deprecated, warnOnce } from './utils';
 
-const { PropTypes } = React;
 const propTypes = {
   children: PropTypes.node,
   type: PropTypes.string,
   size: PropTypes.string,
-  state: PropTypes.string,
+  bsSize: PropTypes.string,
+  state: deprecated(PropTypes.string, 'Please use the prop "valid"'),
+  valid: PropTypes.bool,
   tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
-  getRef: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
-  static: PropTypes.bool,
+  innerRef: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+  static: deprecated(PropTypes.bool, 'Please use the prop "plaintext"'),
+  plaintext: PropTypes.bool,
   addon: PropTypes.bool,
   className: PropTypes.string,
   cssModule: PropTypes.object,
@@ -25,20 +28,23 @@ const defaultProps = {
 
 class Input extends React.Component {
   render() {
-    const {
+    let {
       className,
       cssModule,
       type,
-      size,
+      bsSize,
       state,
+      valid,
       tag,
       addon,
       static: staticInput,
-      getRef,
-      ...attributes,
+      plaintext,
+      innerRef,
+      ...attributes
     } = this.props;
 
     const checkInput = ['radio', 'checkbox'].indexOf(type) > -1;
+    const isNotaNumber = new RegExp('\\D', 'g');
 
     const fileInput = type === 'file';
     const textareaInput = type === 'textarea';
@@ -47,8 +53,8 @@ class Input extends React.Component {
 
     let formControlClass = 'form-control';
 
-    if (staticInput) {
-      formControlClass = `${formControlClass}-static`;
+    if (plaintext || staticInput) {
+      formControlClass = `${formControlClass}-plaintext`;
       Tag = tag;
     } else if (fileInput) {
       formControlClass = `${formControlClass}-file`;
@@ -60,10 +66,25 @@ class Input extends React.Component {
       }
     }
 
+    if (state && typeof valid === 'undefined') {
+      if (state === 'danger') {
+        valid = false;
+      } else if (state === 'success') {
+        valid = true;
+      }
+    }
+
+    if (attributes.size && isNotaNumber.test(attributes.size)) {
+      warnOnce('Please use the prop "bsSize" instead of the "size" to bootstrap\'s input sizing.');
+      bsSize = attributes.size;
+      delete attributes.size;
+    }
+
     const classes = mapToCssModules(classNames(
       className,
-      state ? `form-control-${state}` : false,
-      size ? `form-control-${size}` : false,
+      valid === false && 'is-invalid',
+      valid && 'is-valid',
+      bsSize ? `form-control-${bsSize}` : false,
       formControlClass
     ), cssModule);
 
@@ -72,7 +93,7 @@ class Input extends React.Component {
     }
 
     return (
-      <Tag {...attributes} ref={getRef} className={classes} />
+      <Tag {...attributes} ref={innerRef} className={classes} />
     );
   }
 }

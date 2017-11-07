@@ -1,8 +1,8 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { mapToCssModules } from './utils';
 
-const { PropTypes } = React;
 const propTypes = {
   'aria-label': PropTypes.string,
   children: PropTypes.node,
@@ -24,7 +24,7 @@ const PaginationLink = (props) => {
     next,
     previous,
     tag: Tag,
-    ...attributes,
+    ...attributes
   } = props;
 
   const classes = mapToCssModules(classNames(
@@ -48,6 +48,10 @@ const PaginationLink = (props) => {
   }
 
   let children = props.children;
+  if (children && Array.isArray(children) && children.length === 0) {
+    children = null;
+  }
+
   if (previous || next) {
     children = [
       <span

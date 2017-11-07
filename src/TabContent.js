@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import omit from 'lodash.omit';
-import { mapToCssModules } from './utils';
+import { mapToCssModules, omit } from './utils';
 
-const { PropTypes, Component } = React;
 const propTypes = {
   tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
   activeTab: PropTypes.any,

@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { mount } from 'enzyme';
 import { Tooltip } from '../';
 
@@ -24,11 +23,11 @@ describe('Tooltip', () => {
     target = document.getElementById('target');
     innerTarget = document.getElementById('innerTarget');
 
-    jasmine.clock().install();
+    jest.useFakeTimers();
   });
 
   afterEach(() => {
-    jasmine.clock().uninstall();
+    jest.clearAllTimers();
     document.body.removeChild(element);
     element = null;
     container = null;
@@ -43,11 +42,10 @@ describe('Tooltip', () => {
       </Tooltip>,
       { attachTo: container }
     );
-    const instance = wrapper.instance();
+
     const tooltips = document.getElementsByClassName('tooltip');
 
-    expect(ReactDOM.findDOMNode(instance)).toBe(null);
-    expect(document.body.querySelectorAll('.tooltip.show').length).toBe(0);
+    expect(wrapper.find('.tooltip.show').length).toBe(0);
     expect(target.className).toBe('');
     expect(tooltips.length).toBe(0);
     wrapper.detach();
@@ -61,12 +59,10 @@ describe('Tooltip', () => {
       </Tooltip>,
       { attachTo: container }
     );
-    const instance = wrapper.instance();
+
     const tooltips = document.getElementsByClassName('tooltip');
 
-    expect(ReactDOM.findDOMNode(instance)).toBe(null);
-    expect(document.body.querySelectorAll('.tooltip.show').length).toBe(1);
-    expect(target.className.indexOf('bs-tether-target') > -1).toBe(true);
+    expect(wrapper.find('.tooltip.show').length).toBe(0);
     expect(tooltips.length).toBe(1);
     expect(tooltips[0].textContent).toBe('Tooltip Content');
     wrapper.detach();
@@ -80,12 +76,10 @@ describe('Tooltip', () => {
       </Tooltip>,
       { attachTo: container }
     );
-    const instance = wrapper.instance();
+
     const tooltips = document.getElementsByClassName('tooltip');
 
-    expect(ReactDOM.findDOMNode(instance)).toBe(null);
-    expect(document.body.querySelectorAll('.tooltip.show').length).toBe(1);
-    expect(target.className.indexOf('bs-tether-target') > -1).toBe(true);
+    expect(wrapper.find('.tooltip.show').length).toBe(0);
     expect(tooltips.length).toBe(1);
     expect(tooltips[0].textContent).toBe('Tooltip Content');
     wrapper.detach();
@@ -168,7 +162,7 @@ describe('Tooltip', () => {
     instance.onMouseLeaveTooltip();
     expect(isOpen).toBe(false);
     instance.handleDocumentClick({ target: target });
-    jasmine.clock().tick(200);
+    jest.runTimersToTime(200);
     expect(isOpen).toBe(true);
     wrapper.setProps({ isOpen: isOpen });
     instance.handleDocumentClick({ target: target });
@@ -177,9 +171,33 @@ describe('Tooltip', () => {
     wrapper.detach();
   });
 
+  it('should allow custom classes to be added to the tooltip-inner', () => {
+    const wrapper = mount(
+      <Tooltip isOpen target="target" innerClassName="tooltip-special">
+        Tooltip Content
+      </Tooltip>
+    );
+
+    expect(document.getElementsByClassName('tooltip-inner')[0].className.indexOf('tooltip-special') > -1).toBe(true);
+
+    wrapper.unmount();
+  });
+
+  it('should allow custom classes to be added to the tooltip', () => {
+    const wrapper = mount(
+      <Tooltip isOpen target="target" className="tooltip-special">
+        Tooltip Content
+      </Tooltip>
+    );
+
+    expect(document.getElementsByClassName('tooltip')[0].className.indexOf('tooltip-special') > -1).toBe(true);
+
+    wrapper.unmount();
+  });
+
   it('should not call props.toggle when disabled ', () => {
-    const props = jasmine.createSpyObj('props', ['toggle']);
-    const event = jasmine.createSpyObj('event', ['preventDefault']);
+    const props = createSpyObj('props', ['toggle']);
+    const event = createSpyObj('event', ['preventDefault']);
 
     const wrapper = mount(
       <Tooltip target="target" disabled isOpen={isOpen} toggle={props.toggle}>
@@ -198,7 +216,7 @@ describe('Tooltip', () => {
   });
 
   it('should not throw when props.toggle is not provided ', () => {
-    const event = jasmine.createSpyObj('event', ['preventDefault']);
+    const event = createSpyObj('event', ['preventDefault']);
 
     const wrapper = mount(
       <Tooltip target="target" isOpen={isOpen}>
@@ -226,7 +244,7 @@ describe('Tooltip', () => {
 
       instance.onMouseLeaveTooltip();
       expect(isOpen).toBe(true);
-      jasmine.clock().tick(200);
+      jest.runTimersToTime(200);
       expect(isOpen).toBe(false);
     });
 
@@ -242,7 +260,7 @@ describe('Tooltip', () => {
 
       instance.onMouseLeaveTooltip();
       expect(isOpen).toBe(true);
-      jasmine.clock().tick(200);
+      jest.runTimersToTime(200);
       expect(isOpen).toBe(false);
     });
 
@@ -258,47 +276,47 @@ describe('Tooltip', () => {
 
       instance.onMouseLeaveTooltip();
       expect(isOpen).toBe(true);
-      jasmine.clock().tick(250);  // Default hide value: 250
+      jest.runTimersToTime(250); // Default hide value: 250
       expect(isOpen).toBe(false);
     });
   });
 
   describe('hide', () => {
     it('should call toggle when isOpen', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       isOpen = true;
       const wrapper = mount(
-        <Tooltip target="target" isOpen={isOpen} toggle={toggle}>
+        <Tooltip target="target" isOpen={isOpen} toggle={spy}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
       );
       const instance = wrapper.instance();
 
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       instance.hide();
 
-      expect(Tooltip.prototype.toggle).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalled();
 
       wrapper.detach();
     });
 
     it('should not call toggle when isOpen is false', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       const wrapper = mount(
-        <Tooltip target="target" isOpen={isOpen} toggle={toggle}>
+        <Tooltip target="target" isOpen={isOpen} toggle={spy}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
       );
       const instance = wrapper.instance();
 
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       instance.hide();
 
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       wrapper.detach();
     });
@@ -306,40 +324,40 @@ describe('Tooltip', () => {
 
   describe('show', () => {
     it('should call toggle when isOpen is false', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       const wrapper = mount(
-        <Tooltip target="target" isOpen={isOpen} toggle={toggle}>
+        <Tooltip target="target" isOpen={isOpen} toggle={spy}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
       );
       const instance = wrapper.instance();
 
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       instance.show();
 
-      expect(Tooltip.prototype.toggle).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalled();
 
       wrapper.detach();
     });
 
     it('should not call toggle when isOpen', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       isOpen = true;
       const wrapper = mount(
-        <Tooltip target="target" isOpen={isOpen} toggle={toggle}>
+        <Tooltip target="target" isOpen={isOpen} toggle={spy}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
       );
       const instance = wrapper.instance();
 
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       instance.show();
 
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       wrapper.detach();
     });
@@ -347,9 +365,9 @@ describe('Tooltip', () => {
 
   describe('onMouseOverTooltip', () => {
     it('should clear timeout if it exists on target click', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       const wrapper = mount(
-        <Tooltip target="target" isOpen={isOpen} toggle={toggle} delay={200}>
+        <Tooltip target="target" isOpen={isOpen} toggle={spy} delay={200}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
@@ -359,21 +377,21 @@ describe('Tooltip', () => {
       instance.onMouseLeaveTooltip();
 
       expect(isOpen).toBe(false);
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       instance.onMouseOverTooltip();
-      jasmine.clock().tick(200);
+      jest.runTimersToTime(200);
 
-      expect(Tooltip.prototype.toggle).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalled();
 
       wrapper.detach();
     });
 
     it('should not call .toggle if isOpen', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       isOpen = true;
       const wrapper = mount(
-        <Tooltip target="target" isOpen={isOpen} toggle={toggle} delay={0}>
+        <Tooltip target="target" isOpen={isOpen} toggle={spy} delay={0}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
@@ -381,10 +399,10 @@ describe('Tooltip', () => {
       const instance = wrapper.instance();
 
       instance.onMouseOverTooltip();
-      jasmine.clock().tick(0);  // delay: 0 toggle is still async
+      jest.runTimersToTime(0); // delay: 0 toggle is still async
 
       expect(isOpen).toBe(true);
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       wrapper.detach();
     });
@@ -392,10 +410,10 @@ describe('Tooltip', () => {
 
   describe('onMouseLeaveTooltip', () => {
     it('should clear timeout if it exists on target click', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       isOpen = true;
       const wrapper = mount(
-        <Tooltip target="target" isOpen={isOpen} toggle={toggle} delay={200}>
+        <Tooltip target="target" isOpen={isOpen} toggle={spy} delay={200}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
@@ -405,21 +423,21 @@ describe('Tooltip', () => {
       instance.onMouseOverTooltip();
 
       expect(isOpen).toBe(true);
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       instance.onMouseLeaveTooltip();
-      jasmine.clock().tick(200);
+      jest.runTimersToTime(200);
 
-      expect(Tooltip.prototype.toggle).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalled();
 
       wrapper.detach();
     });
 
     it('should not call .toggle if isOpen is false', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       isOpen = false;
       const wrapper = mount(
-        <Tooltip target="target" isOpen={isOpen} toggle={toggle} delay={0}>
+        <Tooltip target="target" isOpen={isOpen} toggle={spy} delay={0}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
@@ -427,10 +445,10 @@ describe('Tooltip', () => {
       const instance = wrapper.instance();
 
       instance.onMouseLeaveTooltip();
-      jasmine.clock().tick(0);  // delay: 0 toggle is still async
+      jest.runTimersToTime(0); // delay: 0 toggle is still async
 
       expect(isOpen).toBe(false);
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       wrapper.detach();
     });
@@ -438,10 +456,10 @@ describe('Tooltip', () => {
 
   describe('autohide', () => {
     it('should keep tooltip around when false and onmouseleave from tooltip content', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       isOpen = true;
       const wrapper = mount(
-        <Tooltip target="target" autohide={false} isOpen={isOpen} toggle={toggle} delay={200}>
+        <Tooltip target="target" autohide={false} isOpen={isOpen} toggle={spy} delay={200}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
@@ -449,22 +467,22 @@ describe('Tooltip', () => {
       const instance = wrapper.instance();
 
       expect(isOpen).toBe(true);
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
 
       instance.onMouseLeaveTooltipContent();
-      jasmine.clock().tick(100);
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
-      jasmine.clock().tick(200);
-      expect(Tooltip.prototype.toggle).toHaveBeenCalled();
+      jest.runTimersToTime(100);
+      expect(spy).not.toHaveBeenCalled();
+      jest.runTimersToTime(200);
+      expect(spy).toHaveBeenCalled();
 
       wrapper.detach();
     });
 
     it('clears showTimeout in onMouseLeaveTooltipContent', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       isOpen = true;
       const wrapper = mount(
-        <Tooltip target="target" autohide={false} isOpen={isOpen} toggle={toggle} delay={200}>
+        <Tooltip target="target" autohide={false} isOpen={isOpen} toggle={spy} delay={200}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
@@ -474,16 +492,16 @@ describe('Tooltip', () => {
       instance.onMouseOverTooltip();
       expect(instance._showTimeout).toBeTruthy();
       instance.onMouseLeaveTooltipContent();
-      jasmine.clock().tick(300);
+      jest.runTimersToTime(300);
       expect(instance._showTimeout).toBeFalsy();
       wrapper.detach();
     });
 
     it('clears hide timeout in onMouseOverTooltipContent', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       isOpen = true;
       const wrapper = mount(
-        <Tooltip target="target" autohide={false} isOpen={isOpen} toggle={toggle} delay={200}>
+        <Tooltip target="target" autohide={false} isOpen={isOpen} toggle={spy} delay={200}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
@@ -491,9 +509,9 @@ describe('Tooltip', () => {
       const instance = wrapper.instance();
 
       expect(isOpen).toBe(true);
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
       instance.onMouseLeaveTooltipContent();
-      jasmine.clock().tick(100);
+      jest.runTimersToTime(100);
       expect(instance._hideTimeout).toBeTruthy();
       instance.onMouseOverTooltipContent();
       expect(instance._hideTimeout).toBeFalsy();
@@ -502,22 +520,22 @@ describe('Tooltip', () => {
     });
 
     it('should not keep tooltip around when autohide is true and tooltip content is hovered over', () => {
-      spyOn(Tooltip.prototype, 'toggle').and.callThrough();
+      const spy = jest.fn(toggle);
       isOpen = true;
       const wrapper = mount(
-        <Tooltip target="target" autohide isOpen={isOpen} toggle={toggle} delay={200}>
+        <Tooltip target="target" autohide isOpen={isOpen} toggle={spy} delay={200}>
           Tooltip Content
         </Tooltip>,
         { attachTo: container }
       );
       const instance = wrapper.instance();
       expect(isOpen).toBe(true);
-      expect(Tooltip.prototype.toggle).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
       instance.onMouseLeaveTooltip();
-      jasmine.clock().tick(100);
+      jest.runTimersToTime(100);
       instance.onMouseOverTooltipContent();
-      jasmine.clock().tick(200);
-      expect(Tooltip.prototype.toggle).toHaveBeenCalled();
+      jest.runTimersToTime(200);
+      expect(spy).toHaveBeenCalled();
       instance.onMouseLeaveTooltipContent();
       expect(instance._hideTimeout).toBeFalsy();
       wrapper.detach();

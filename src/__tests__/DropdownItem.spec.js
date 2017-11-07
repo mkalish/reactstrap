@@ -55,7 +55,7 @@ describe('DropdownItem', () => {
   });
 
   it('should render custom element', () => {
-    const Link = (props) => <a href="/home" {...props}>{props.children}</a>;
+    const Link = props => <a href="/home" {...props}>{props.children}</a>;
     const wrapper = mount(<DropdownItem tag={Link}>Home</DropdownItem>);
 
     expect(wrapper.find('a').length).toBe(1);
@@ -70,6 +70,14 @@ describe('DropdownItem', () => {
       expect(wrapper.find('h6').length).toBe(1);
       expect(wrapper.find('h6').hasClass('dropdown-header')).toBe(true);
       expect(wrapper.text()).toBe('Heading');
+    });
+  });
+
+  describe('active', () => {
+    it('should render an active class', () => {
+      const wrapper = mount(<DropdownItem active />);
+
+      expect(wrapper.find('.active').length).toBe(1);
     });
   });
 
@@ -93,7 +101,7 @@ describe('DropdownItem', () => {
 
   describe('onClick', () => {
     it('should not be called when disabled', () => {
-      const e = { preventDefault: jasmine.createSpy('preventDefault') };
+      const e = { preventDefault: jest.fn() };
       const wrapper = mount(<DropdownItem disabled>Item</DropdownItem>);
       const instance = wrapper.instance();
 
@@ -102,7 +110,7 @@ describe('DropdownItem', () => {
     });
 
     it('should not be called when divider is set', () => {
-      const e = { preventDefault: jasmine.createSpy('preventDefault') };
+      const e = { preventDefault: jest.fn() };
       const wrapper = mount(<DropdownItem divider />);
       const instance = wrapper.instance();
 
@@ -111,7 +119,7 @@ describe('DropdownItem', () => {
     });
 
     it('should not be called when header item', () => {
-      const e = { preventDefault: jasmine.createSpy('preventDefault') };
+      const e = { preventDefault: jest.fn() };
       const wrapper = mount(<DropdownItem header>Header</DropdownItem>);
       const instance = wrapper.instance();
 
@@ -120,8 +128,8 @@ describe('DropdownItem', () => {
     });
 
     it('should be called when not disabled, heading, or divider', () => {
-      const e = { preventDefault: jasmine.createSpy('preventDefault') };
-      const onClick = jasmine.createSpy('onClick');
+      const e = { preventDefault: jest.fn() };
+      const onClick = jest.fn();
       const wrapper = mount(
         <DropdownItem onClick={() => onClick()}>Click me</DropdownItem>,
         {
@@ -137,7 +145,7 @@ describe('DropdownItem', () => {
     });
 
     it('should call toggle', () => {
-      toggle = jasmine.createSpy('toggle');
+      toggle = jest.fn();
       const wrapper = mount(
         <DropdownItem>Click me</DropdownItem>,
         {

@@ -1,9 +1,10 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import isobject from 'lodash.isobject';
 import { mapToCssModules } from './utils';
 
-const { PropTypes } = React;
-const colSizes = ['xs', 'sm', 'md', 'lg', 'xl'];
+const colWidths = ['xs', 'sm', 'md', 'lg', 'xl'];
 
 const stringOrNumberProp = PropTypes.oneOfType([PropTypes.number, PropTypes.string]);
 
@@ -22,8 +23,6 @@ const propTypes = {
   children: PropTypes.node,
   hidden: PropTypes.bool,
   check: PropTypes.bool,
-  inline: PropTypes.bool,
-  disabled: PropTypes.bool,
   size: PropTypes.string,
   for: PropTypes.string,
   tag: PropTypes.string,
@@ -34,10 +33,22 @@ const propTypes = {
   md: columnProps,
   lg: columnProps,
   xl: columnProps,
+  widths: PropTypes.array,
 };
 
 const defaultProps = {
   tag: 'label',
+  widths: colWidths,
+};
+
+const getColumnSizeClass = (isXs, colWidth, colSize) => {
+  if (colSize === true || colSize === '') {
+    return isXs ? 'col' : `col-${colWidth}`;
+  } else if (colSize === 'auto') {
+    return isXs ? 'col-auto' : `col-${colWidth}-auto`;
+  }
+
+  return isXs ? `col-${colSize}` : `col-${colWidth}-${colSize}`;
 };
 
 const Label = (props) => {
@@ -45,41 +56,52 @@ const Label = (props) => {
     className,
     cssModule,
     hidden,
+    widths,
     tag: Tag,
     check,
-    inline,
-    disabled,
     size,
     for: htmlFor,
-    ...attributes,
+    ...attributes
   } = props;
 
   const colClasses = [];
 
-  colSizes.forEach(colSize => {
-    const columnProp = props[colSize];
-    delete attributes[colSize];
+  widths.forEach((colWidth, i) => {
+    let columnProp = props[colWidth];
 
-    if (columnProp && columnProp.size) {
+    delete attributes[colWidth];
+
+    if (!columnProp && columnProp !== '') {
+      return;
+    }
+
+    const isXs = !i;
+    let colClass;
+
+    if (isobject(columnProp)) {
+      const colSizeInterfix = isXs ? '-' : `-${colWidth}-`;
+      colClass = getColumnSizeClass(isXs, colWidth, columnProp.size);
+
       colClasses.push(mapToCssModules(classNames({
-        [`col-${colSize}-${columnProp.size}`]: columnProp.size,
-        [`push-${colSize}-${columnProp.push}`]: columnProp.push,
-        [`pull-${colSize}-${columnProp.pull}`]: columnProp.pull,
-        [`offset-${colSize}-${columnProp.offset}`]: columnProp.offset,
+        [colClass]: columnProp.size || columnProp.size === '',
+        [`push${colSizeInterfix}${columnProp.push}`]: columnProp.push || columnProp.push === 0,
+        [`pull${colSizeInterfix}${columnProp.pull}`]: columnProp.pull || columnProp.pull === 0,
+        [`offset${colSizeInterfix}${columnProp.offset}`]: columnProp.offset || columnProp.offset === 0
       })), cssModule);
-    } else if (columnProp) {
-      colClasses.push(`col-${colSize}-${columnProp}`);
+    } else {
+      colClass = getColumnSizeClass(isXs, colWidth, columnProp);
+      colClasses.push(colClass);
     }
   });
 
   const classes = mapToCssModules(classNames(
     className,
     hidden ? 'sr-only' : false,
-    check ? `form-check-${inline ? 'inline' : 'label'}` : false,
-    check && inline && disabled ? 'disabled' : false,
+    check ? 'form-check-label' : false,
     size ? `col-form-label-${size}` : false,
     colClasses,
-    colClasses.length ? 'col-form-label' : false
+    colClasses.length ? 'col-form-label' : false,
+    !check && !colClasses.length ? 'form-control-label' : false
   ), cssModule);
 
   return (

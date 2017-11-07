@@ -17,7 +17,7 @@ export default class TooltipsPage extends React.Component {
       <div>
         <Helmet title="Tooltips" />
         <h3>Tooltips</h3>
-        <p>Tooltips are built with <a href="http://tether.io/">http://tether.io</a>.</p>
+        <p>Tooltips are built with <a href="https://popper.js.org/">https://popper.js.org/</a> via <a href="https://github.com/souporserious/react-popper">https://github.com/souporserious/react-popper</a>.</p>
         <div className="docs-example">
           <TooltipExample />
         </div>
@@ -30,46 +30,46 @@ export default class TooltipsPage extends React.Component {
         <pre>
           <PrismCode className="language-jsx">
 {`Tooltip.propTypes = {
-  isOpen:  PropTypes.bool,
   // boolean to control the state of the tooltip
-  toggle:  PropTypes.func,
+  isOpen: PropTypes.bool,
   // callback for toggling isOpen in the controlling component
+  toggle: PropTypes.func,
+  // target element or element ID, popover is attached to this element
   target:  PropTypes.oneOfType([
     PropTypes.string,
-    PropTypes.object
+    PropTypes.func,
+    DOMElement, // instanceof Element (https://developer.mozilla.org/en-US/docs/Web/API/Element)
   ]).isRequired,
-  // target element or element ID, popover is attached to this element
-  tether: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-  // optionally overide tether config http://tether.io/#options
-  tetherRef: PropType.function,
-  // function which is passed a reference to the instance of tether for manually \`position()\`ing
+  // Where to inject the popper DOM node, default to body
+  container: PropTypes.oneOfType([PropTypes.string, PropTypes.func, DOMElement]),
+  // optionally override show/hide delays - default { show: 0, hide: 250 }
   delay: PropTypes.oneOfType([
     PropTypes.shape({ show: PropTypes.number, hide: PropTypes.number }),
     PropTypes.number
   ]),
-  // optionally override show/hide delays - default { show: 0, hide: 250 }
-  autohide: PropTypes.bool,
+  className: PropTypes.string,
+  // Apply class to the inner-tooltip
+  innerClassName: PropTypes.string,
   // optionally hide tooltip when hovering over tooltip content - default true
-  placement: PropTypes.oneOf([
-    'top',
-    'bottom',
-    'left',
-    'right',
-    'top left',
-    'top center',
-    'top right',
-    'right top',
-    'right middle',
-    'right bottom',
-    'bottom right',
-    'bottom center',
-    'bottom left',
-    'left top',
-    'left middle',
-    'left bottom'
-  ])
+  autohide: PropTypes.bool,
   // convenience attachments for popover
-  // examples http://github.hubspot.com/tooltip/docs/welcome/
+  placement: PropTypes.oneOf([
+    'auto',
+    'auto-start',
+    'auto-end',
+    'top',
+    'top-start',
+    'top-end',
+    'right',
+    'right-start',
+    'right-end',
+    'bottom',
+    'bottom-start',
+    'bottom-end',
+    'left',
+    'left-start',
+    'left-end',
+  ])
 }`}
           </PrismCode>
         </pre>

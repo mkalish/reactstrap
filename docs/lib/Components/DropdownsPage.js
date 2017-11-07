@@ -41,10 +41,6 @@ export default class DropdownPage extends React.Component {
         <p>
           The <code>Dropdown</code> component is used to pass the <code>isOpen</code> & <code>toggle</code> props via context to the following components: <code>DropdownToggle</code>, <code>DropdownMenu</code>. The <code>DropdownToggle</code> uses the <code>Button</code> component internally, meaning it also accepts all the props the <Link to="/components/buttons/">Button component</Link> accepts.
         </p>
-        <h4>Advanced Positioning</h4>
-        <p>
-          The <code>DropdownMenu</code> can automatically be flipped (dropup vs dropdown) according to space available in the viewport by passing the <code>tether</code> prop to Dropdown <code>{`<Dropdown tether />`}</code>. For full customization, an object with <a href="http://tether.io/#options">Tether options</a> can be used instead.
-        </p>
         <div className="docs-example">
           <DropdownExample />
         </div>
@@ -61,8 +57,9 @@ export default class DropdownPage extends React.Component {
   dropup: PropTypes.bool,
   group: PropTypes.bool,
   isOpen: PropTypes.bool,
-  tag: PropTypes.string, // default: 'div'
-  tether: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
+  // For Dropdown usage inside a Nav
+  nav: PropTypes.bool,
+  tag: PropTypes.string, // default: 'div' unless nav=true, then 'li'
   toggle: PropTypes.func
 };
 
@@ -78,16 +75,38 @@ DropdownToggle.propTypes = {
   nav: PropTypes.bool,
   // Defaults to Button component
   tag: PropTypes.any
+};
+
+DropdownMenu.propTypes = {
+  tag: PropTypes.string,
+  children: PropTypes.node.isRequired,
+  right: PropTypes.bool,
+  flip: PropTypes.bool, // default: true,
+  className: PropTypes.string,
+  cssModule: PropTypes.object,
+};
+
+DropdownItem.propTypes = {
+  children: PropTypes.node,
+  active: PropTypes.bool,
+  disabled: PropTypes.bool,
+  divider: PropTypes.bool,
+  tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+  header: PropTypes.bool,
+  onClick: PropTypes.func,
+  className: PropTypes.string,
+  cssModule: PropTypes.object,
+  toggle: PropTypes.bool // default: true
 };`}
           </PrismCode>
         </pre>
         <h3>Alignment</h3>
-        <p>To align the <code>DropdownMenu</code> to the right, add a <code>right</code> prop to it.</p>
+        <p>To align the <code>DropdownMenu</code> to the right, add a <code>right</code> prop to <code>Dropdown</code>.</p>
         <div className="docs-example">
           <div style={{ display: 'inline-block' }}>
             <Dropdown isOpen={this.state.example2} toggle={this.toggleExample2}>
               <DropdownToggle caret>
-                Dropdown
+                This dropdown's menu is right-aligned
               </DropdownToggle>
               <DropdownMenu right>
                 <DropdownItem header>Header</DropdownItem>
@@ -103,7 +122,7 @@ DropdownToggle.propTypes = {
           <PrismCode className="language-jsx">
 {`<Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggle}>
   <DropdownToggle caret>
-    Dropdown
+    This dropdown's menu is right-aligned
   </DropdownToggle>
   <DropdownMenu right>
     <DropdownItem header>Header</DropdownItem>
@@ -189,7 +208,7 @@ DropdownToggle.propTypes = {
 
         <h3>Uncontrolled Dropdown</h3>
         <p>
-          For the most basic use-case an uncontrolled component can provide the functionality wanted without the need to manage/control the state of the component. <code>UncontrolledDropdown</code> does not require <code>isOpen</code> nor <code>toggle</code> props to work. For the other Dropdown flavors, <code>ButtonDropdown</code>, <code>NavDropdown</code>, uncontrolled components have been made as well; <code>UncontrolledButtonDropdown</code>, <code>UncontrolledNavDropdown</code> respectfully.
+          For the most basic use-case an uncontrolled component can provide the functionality wanted without the need to manage/control the state of the component. <code>UncontrolledDropdown</code> does not require <code>isOpen</code> nor <code>toggle</code> props to work. For the <code>ButtonDropdown</code> flavor, an uncontrolled component have been made as well; <code>UncontrolledButtonDropdown</code>.
         </p>
         <div className="docs-example">
           <DropdownUncontrolledExample />

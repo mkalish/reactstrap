@@ -2,22 +2,20 @@
 // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-find-dom-node.md
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
+import { Manager } from 'react-popper';
 import classNames from 'classnames';
-import omit from 'lodash.omit';
-import { mapToCssModules } from './utils';
-import TetherContent from './TetherContent';
-import DropdownMenu from './DropdownMenu';
+import { mapToCssModules, omit, keyCodes } from './utils';
 
-const { PropTypes } = React;
 const propTypes = {
   disabled: PropTypes.bool,
   dropup: PropTypes.bool,
   group: PropTypes.bool,
   isOpen: PropTypes.bool,
+  nav: PropTypes.bool,
   size: PropTypes.string,
   tag: PropTypes.string,
-  tether: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
   toggle: PropTypes.func,
   children: PropTypes.node,
   className: PropTypes.string,
@@ -26,21 +24,14 @@ const propTypes = {
 
 const defaultProps = {
   isOpen: false,
-  tag: 'div'
+  dropup: false,
+  nav: false,
 };
 
 const childContextTypes = {
   toggle: PropTypes.func.isRequired,
   isOpen: PropTypes.bool.isRequired,
-};
-
-const defaultTetherConfig = {
-  classPrefix: 'bs-tether',
-  classes: { element: 'dropdown', enabled: 'show' },
-  constraints: [
-    { to: 'scrollParent', attachment: 'together none' },
-    { to: 'window', attachment: 'together none' }
-  ]
+  dropup: PropTypes.bool.isRequired,
 };
 
 class Dropdown extends React.Component {
@@ -48,8 +39,8 @@ class Dropdown extends React.Component {
     super(props);
 
     this.addEvents = this.addEvents.bind(this);
-    this.getTetherConfig = this.getTetherConfig.bind(this);
     this.handleDocumentClick = this.handleDocumentClick.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
     this.removeEvents = this.removeEvents.bind(this);
     this.toggle = this.toggle.bind(this);
   }
@@ -57,7 +48,8 @@ class Dropdown extends React.Component {
   getChildContext() {
     return {
       toggle: this.props.toggle,
-      isOpen: this.props.isOpen
+      isOpen: this.props.isOpen,
+      dropup: this.props.dropup,
     };
   }
 
@@ -75,61 +67,87 @@ class Dropdown extends React.Component {
     this.removeEvents();
   }
 
-  getTetherTarget() {
-    const container = ReactDOM.findDOMNode(this);
-
-    return container.querySelector('[data-toggle="dropdown"]');
-  }
-
-  getTetherConfig(childProps) {
-    const target = () => this.getTetherTarget();
-    let vElementAttach = 'top';
-    let hElementAttach = 'left';
-    let vTargetAttach = 'bottom';
-    let hTargetAttach = 'left';
-
-    if (childProps.right) {
-      hElementAttach = 'right';
-      hTargetAttach = 'right';
-    }
-
-    if (this.props.dropup) {
-      vElementAttach = 'bottom';
-      vTargetAttach = 'top';
-    }
-
-    return {
-      ...defaultTetherConfig,
-      attachment: vElementAttach + ' ' + hElementAttach,
-      targetAttachment: vTargetAttach + ' ' + hTargetAttach,
-      target,
-      ...this.props.tether
-    };
+  getContainer() {
+    return ReactDOM.findDOMNode(this);
   }
 
   addEvents() {
-    document.addEventListener('click', this.handleDocumentClick, true);
+    ['click', 'touchstart', 'keyup'].forEach(event =>
+      document.addEventListener(event, this.handleDocumentClick, true)
+    );
   }
 
   removeEvents() {
-    document.removeEventListener('click', this.handleDocumentClick, true);
+    ['click', 'touchstart', 'keyup'].forEach(event =>
+      document.removeEventListener(event, this.handleDocumentClick, true)
+    );
   }
 
   handleDocumentClick(e) {
-    const container = ReactDOM.findDOMNode(this);
+    if (e && (e.which === 3 || (e.type === 'keyup' && e.which !== keyCodes.tab))) return;
+    const container = this.getContainer();
 
-    if (container.contains(e.target) && container !== e.target) {
+    if (container.contains(e.target) && container !== e.target && (e.type !== 'keyup' || e.which === keyCodes.tab)) {
       return;
     }
 
-    this.toggle();
+    this.toggle(e);
+  }
+
+  handleKeyDown(e) {
+    if ([keyCodes.esc, keyCodes.up, keyCodes.down, keyCodes.space].indexOf(e.which) === -1 ||
+      (/button/i.test(e.target.tagName) && e.which === keyCodes.space) ||
+      /input|textarea/i.test(e.target.tagName)) {
+      return;
+    }
+
+    e.preventDefault();
+    if (this.props.disabled) return;
+
+    const container = this.getContainer();
+
+    if (e.which === keyCodes.space && this.props.isOpen && container !== e.target) {
+      e.target.click();
+    }
+
+    if (e.which === keyCodes.esc || !this.props.isOpen) {
+      this.toggle(e);
+      container.querySelector('[aria-expanded]').focus();
+      return;
+    }
+
+    const menuClass = mapToCssModules('dropdown-menu', this.props.cssModule);
+    const itemClass = mapToCssModules('dropdown-item', this.props.cssModule);
+    const disabledClass = mapToCssModules('disabled', this.props.cssModule);
+
+    const items = container.querySelectorAll(`.${menuClass} .${itemClass}:not(.${disabledClass})`);
+
+    if (!items.length) return;
+
+    let index = -1;
+    for (let i = 0; i < items.length; i += 1) {
+      if (items[i] === e.target) {
+        index = i;
+        break;
+      }
+    }
+
+    if (e.which === keyCodes.up && index > 0) {
+      index -= 1;
+    }
+
+    if (e.which === keyCodes.down && index < items.length - 1) {
+      index += 1;
+    }
+
+    if (index < 0) {
+      index = 0;
+    }
+
+    items[index].focus();
   }
 
   handleProps() {
-    if (this.props.tether) {
-      return;
-    }
-
     if (this.props.isOpen) {
       this.addEvents();
     } else {
@@ -142,23 +160,7 @@ class Dropdown extends React.Component {
       return e && e.preventDefault();
     }
 
-    return this.props.toggle();
-  }
-
-  renderChildren() {
-    const { tether, children, ...attrs } = this.props;
-    attrs.toggle = this.toggle;
-
-    return React.Children.map(React.Children.toArray(children), (child) => {
-      if (tether && child.type === DropdownMenu) {
-        let tetherConfig = this.getTetherConfig(child.props);
-        return (
-          <TetherContent {...attrs} tether={tetherConfig}>{child}</TetherContent>
-        );
-      }
-
-      return child;
-    });
+    return this.props.toggle(e);
   }
 
   render() {
@@ -166,12 +168,14 @@ class Dropdown extends React.Component {
       className,
       cssModule,
       dropup,
+      isOpen,
       group,
       size,
-      tag: Tag,
-      isOpen,
-      ...attributes
-    } = omit(this.props, ['toggle', 'tether']);
+      nav,
+      ...attrs
+    } = omit(this.props, ['toggle', 'disabled']);
+
+    attrs.tag = attrs.tag || (nav ? 'li' : 'div');
 
     const classes = mapToCssModules(classNames(
       className,
@@ -180,18 +184,11 @@ class Dropdown extends React.Component {
         [`btn-group-${size}`]: !!size,
         dropdown: !group,
         show: isOpen,
-        dropup: dropup
+        dropup: dropup,
+        'nav-item': nav
       }
     ), cssModule);
-
-    return (
-      <Tag
-        {...attributes}
-        className={classes}
-      >
-        {this.renderChildren()}
-      </Tag>
-    );
+    return <Manager {...attrs} className={classes} onKeyDown={this.handleKeyDown} />;
   }
 }
 

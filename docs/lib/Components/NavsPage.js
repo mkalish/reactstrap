@@ -31,7 +31,11 @@ export default class NavssPage extends React.Component {
 {`Nav.propTypes = {
   tabs: PropTypes.bool,
   pills: PropTypes.bool,
-  vertical: PropTypes.bool,
+  card: PropTypes.bool,
+  justified: PropTypes.bool,
+  fill: PropTypes.bool,
+  vertical: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+  horizontal: PropTypes.string,
   navbar: PropTypes.bool,
   tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
   // pass in custom element to use
@@ -56,20 +60,6 @@ export default class NavssPage extends React.Component {
   tag: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
   // pass in custom element to use
 }`}
-          </PrismCode>
-        </pre>
-        <h4>NavDropdown Properties</h4>
-        <pre>
-          <PrismCode className="language-jsx">
-{`NavDropdown.propTypes = {
-  disabled: PropTypes.bool,
-  dropup: PropTypes.bool,
-  group: PropTypes.bool,
-  isOpen: PropTypes.bool,
-  tag: PropTypes.string,
-  tether: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-  toggle: PropTypes.func
-};`}
           </PrismCode>
         </pre>
         <h3>Vertical</h3>

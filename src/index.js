@@ -24,24 +24,34 @@ import Card from './Card';
 import CardGroup from './CardGroup';
 import CardDeck from './CardDeck';
 import CardColumns from './CardColumns';
+import CardBody from './CardBody';
 import CardBlock from './CardBlock';
 import CardLink from './CardLink';
 import CardFooter from './CardFooter';
 import CardHeader from './CardHeader';
 import CardImg from './CardImg';
 import CardImgOverlay from './CardImgOverlay';
+import Carousel from './Carousel';
+import UncontrolledCarousel from './UncontrolledCarousel';
+import CarouselControl from './CarouselControl';
+import CarouselItem from './CarouselItem';
+import CarouselIndicators from './CarouselIndicators';
+import CarouselCaption from './CarouselCaption';
 import CardSubtitle from './CardSubtitle';
 import CardText from './CardText';
 import CardTitle from './CardTitle';
+import PopperContent from './PopperContent';
+import PopperTargetHelper from './PopperTargetHelper';
 import Popover from './Popover';
+import PopoverHeader from './PopoverHeader';
 import PopoverTitle from './PopoverTitle';
+import PopoverBody from './PopoverBody';
 import PopoverContent from './PopoverContent';
 import Progress from './Progress';
 import Modal from './Modal';
 import ModalHeader from './ModalHeader';
 import ModalBody from './ModalBody';
 import ModalFooter from './ModalFooter';
-import TetherContent from './TetherContent';
 import Tooltip from './Tooltip';
 import Table from './Table';
 import ListGroup from './ListGroup';
@@ -103,23 +113,33 @@ export {
   CardGroup,
   CardDeck,
   CardColumns,
+  CardBody,
   CardBlock,
   CardFooter,
   CardHeader,
   CardImg,
   CardImgOverlay,
+  Carousel,
+  UncontrolledCarousel,
+  CarouselControl,
+  CarouselItem,
+  CarouselIndicators,
+  CarouselCaption,
   CardSubtitle,
   CardText,
   CardTitle,
   Popover,
   PopoverContent,
+  PopoverBody,
   PopoverTitle,
+  PopoverHeader,
   Progress,
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
-  TetherContent,
+  PopperContent,
+  PopperTargetHelper,
   Tooltip,
   Table,
   ListGroup,
